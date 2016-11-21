@@ -18,41 +18,44 @@ function handleFileSelect(evt) {
 
   reader.onload = (function(theFile) {
     return function(e) {
-      // Render thumbnail.
       var span = document.createElement('span');
-      span.innerHTML = ['<img id=img class="thumb" src="', e.target.result,
+      span.innerHTML = ['<img id=img src="', e.target.result,
                         '" title="', escape(theFile.name), '"/>'].join('');
-      document.getElementById('app').insertBefore(span, null);
-
+      document.getElementById('original-image-hidden').insertBefore(span, null);
       var img = document.getElementById('img');
 
-      var canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+      var image = document.getElementById('original-image');
+      image.src = e.target.result;
 
-      console.log("Canvas size: " + canvas.width + "x" + canvas.height);
-      var pixelData = canvas.getContext('2d').getImageData(0, 0, 1, 1).data;
-      console.log("pixel data: " + pixelData);
-
-      var pixelsX = [];
-      var pixelsY = [];
-      var pixelsZ = [];
-      for (var x=0; x < canvas.width; x++){
-        for (var y=0; y < canvas.height; y++){
-          var pixel = canvas.getContext('2d').getImageData(x, y, 1, 1).data;
-          pixelsX.push(pixel[0]);
-          pixelsY.push(pixel[1]);
-          pixelsZ.push(pixel[2]);
-        }
-      }
-
-      plotWithPlotly(pixelsX, pixelsY, pixelsZ);
-
+      run();
     };
   })(file);
 
   reader.readAsDataURL(file);
+}
+
+function run(){
+  var canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+  console.log("Canvas size: " + canvas.width + "x" + canvas.height);
+  var pixelData = canvas.getContext('2d').getImageData(0, 0, 1, 1).data;
+  console.log("pixel data: " + pixelData);
+
+  var pixelsX = [];
+  var pixelsY = [];
+  var pixelsZ = [];
+  for (var x=0; x < canvas.width; x++){
+    for (var y=0; y < canvas.height; y++){
+      var pixel = canvas.getContext('2d').getImageData(x, y, 1, 1).data;
+      pixelsX.push(pixel[0]);
+      pixelsY.push(pixel[1]);
+      pixelsZ.push(pixel[2]);
+    }
+  }
+  plotWithPlotly(pixelsX, pixelsY, pixelsZ);
 }
 
 function plotWithPlotly(pixelsX, pixelsY, pixelsZ){
@@ -85,6 +88,5 @@ function plotWithPlotly(pixelsX, pixelsY, pixelsZ){
 
   Plotly.newPlot('plot', [data], layout);
 }
-
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);

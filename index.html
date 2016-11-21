@@ -3,13 +3,22 @@
     <head>
         <meta charset="UTF-8">
         <title>title</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.2/lodash.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     </head>
     <body>
         <input type="file" id="files" name="files[]" multiple />
+        <br/>
         <div style="display: none;" id="app"></div>
+
+        <div id="original-image-hidden"></div>
+
+        <br/>
+        <img id="original-image"></div>
         <div id="plot"></div>
+        <div id="plot2"></div>
+        <div id="plot3"></div>
     </body>
 </html>
 <script src="index.js"></script>
