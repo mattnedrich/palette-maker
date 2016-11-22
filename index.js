@@ -71,7 +71,7 @@ function plotWithPlotly(pixels){
     z: _.map(pixels, function(p){ return p.blue; }),
     mode: 'markers',
     marker: {
-      size: 5,
+      size: 3,
       color: colors,
       line: {
         color: 'rgb(100,100,100)',
@@ -85,32 +85,55 @@ function plotWithPlotly(pixels){
     margin: { l:0, r:0, b: 0, t: 0 }
   };
 
-  // Plotly.newPlot('plot', [data], layout);
+  Plotly.newPlot('plot', [data], layout);
 
-  var groups = medianCut([pixels], 0, 10);
+  var groups = medianCut([pixels], 0, 8);
 
-  console.log("=======================")
+  console.log("=======================");
   _.each(groups, function(g){
     console.log("Cluster: " + g.length + " points");
   });
   plotClusters(groups, "plot2");
 }
 
+function computeAverageColor(points){
+  var totalRed = _.chain(points)
+        .map(function(p){ return p.red; })
+        .sum()
+        .value();
+  var totalGreen = _.chain(points)
+        .map(function(p){ return p.green; })
+        .sum()
+        .value();
+  var totalBlue = _.chain(points)
+        .map(function(p){ return p.blue; })
+        .sum()
+        .value();
+  return {
+    red: (totalRed / points.length),
+    green: (totalGreen / points.length),
+    blue: (totalBlue / points.length)
+  };
+}
+
 function plotClusters(pointGroups, elementId){
   var data = _.map(pointGroups, function(group){
+    var avgColor = computeAverageColor(group);
+    var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
     return {
       x: _.map(group, function(p){ return p.red; }),
       y: _.map(group, function(p){ return p.green; }),
       z: _.map(group, function(p){ return p.blue; }),
       mode: 'markers',
       marker: {
-        size: 2,
-        // line: {
-        //   color: 'rgb(100,100,100)',
-        //   width: 1
-        // }
+        color: colorString,
+        size: 3,
+        line: {
+          color: 'rgb(100,100,100)',
+          width: 1
+        }
       },
-      type: 'scatter3d'
+      type: 'scatter3d',
     };
   });
 
