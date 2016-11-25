@@ -1,7 +1,6 @@
+
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
-  // Great success! All the File APIs are supported.
-
 } else {
   alert('The File APIs are not fully supported in this browser.');
 }
@@ -55,11 +54,13 @@ function run(){
       });
     }
   }
-  plotWithPlotly(pixels);
+
+  plotOriginalData(pixels);
+  result = kMeansAndPlot(pixels, 7, 25);
+  medianCutAndPlot(pixels, 7);
 }
 
-function plotWithPlotly(pixels){
-
+function plotOriginalData(pixels) {
   console.log("will plot " + pixels.length + " pixels");
   var colors = _.map(pixels, function(p, index){
     return "rgb(" + p.red + "," + p.green + "," + p.blue + ")";
@@ -86,8 +87,10 @@ function plotWithPlotly(pixels){
   };
 
   Plotly.newPlot('plot', [data], layout);
+}
 
-  var groups = medianCut([pixels], 0, 8);
+function medianCutAndPlot(pixels, partitions) {
+  var groups = medianCut([pixels], 0, partitions);
 
   console.log("=======================");
   _.each(groups, function(g){
@@ -95,6 +98,99 @@ function plotWithPlotly(pixels){
   });
   plotClusters(groups, "plot2");
 }
+
+// =======================================================
+// ================== KMeans Start =======================
+// =======================================================
+
+function kMeansAndPlot(pixels, k, numRuns) {
+  var bestResult = null;
+  var bestError = Infinity;
+
+  for(var attempt=0; attempt<numRuns; attempt++) {
+    result = runKMeans(pixels, k);
+    if(result.error < bestError) {
+      bestResult = result.groups;
+      bestError = result.error;
+    }
+  }
+  plotClusters(bestResult, "plot3");
+  return bestResult;
+}
+
+function runKMeans(pixels, k) {
+  // randomly initialize means
+  var means = [];
+  for(m=0; m<k; m++){
+    var pixel = pixels[Math.floor(Math.random()*pixels.length)];
+    means.push(pixel);
+  }
+
+  var done = false;
+  var result = null;
+  while(!done) {
+    result = groupPointsByMeans(means, pixels);
+    newMeans = computeMeans(result.groups);
+    done = isDone(means, newMeans);
+  }
+
+  console.log("Finished KMeans, error is " + result.error);
+  return {
+    groups: result.groups,
+    error: result.error
+  };
+}
+
+function computeMeans(groups) {
+  return _.map(groups, function(group) {
+    var averageColor = computeAverageColor(group);
+    return [averageColor.red, averageColor.green, averageColor.blue];
+  });
+}
+
+function isDone(meansA, meansB) {
+  var result = true;
+  _.each(meansA, function(mean) {
+    result = result | _.includes(meansB, mean);
+  });
+  return result;
+}
+
+function groupPointsByMeans(means, points) {
+  var totalError = 0;
+  var groups = _.map(means, function(m) { return []; });
+
+  _.each(points, function(point) {
+    var bestGroupIndex;
+    var bestGroupError = Infinity;
+    _.each(means, function(mean, index) {
+      var error = distance(point, mean);
+      if (error < bestGroupError) {
+        bestGroupError = error;
+        bestGroupIndex = index;
+      }
+    });
+    groups[bestGroupIndex].push(point);
+    totalError += bestGroupError;
+  });
+  return {
+    means: means,
+    groups: groups,
+    error: totalError
+  };
+}
+
+function distance(pointA, pointB) {
+  var squaredDiffs = _.map(pointA, function(dim, index) {
+    var diff = pointA[index] - pointB[index];
+    return diff * diff;
+  });
+  return Math.sqrt(_.sum(squaredDiffs));
+}
+
+// =======================================================
+// ================== KMeans End =========================
+// =======================================================
 
 function computeAverageColor(points){
   var totalRed = _.chain(points)
@@ -133,7 +229,7 @@ function plotClusters(pointGroups, elementId){
           width: 1
         }
       },
-      type: 'scatter3d',
+      type: 'scatter3d'
     };
   });
 
