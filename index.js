@@ -5,6 +5,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   alert('The File APIs are not fully supported in this browser.');
 }
 
+var image = null;
 function handleFileSelect(evt) {
   var file = evt.target.files[0]; // FileList object
 
@@ -17,33 +18,46 @@ function handleFileSelect(evt) {
 
   reader.onload = (function(theFile) {
     return function(e) {
-      var span = document.createElement('span');
-      span.innerHTML = ['<img id=img src="', e.target.result,
-                        '" title="', escape(theFile.name), '"/>'].join('');
-      document.getElementById('original-image-hidden').insertBefore(span, null);
-      var img = document.getElementById('img');
+      images = document.getElementsByClassName('original-image');
+      _.each(images, function(i){
+        i.src = e.target.result;
+        image = i;
+      });
 
-      var image = document.getElementById('original-image');
-      image.src = e.target.result;
+      $("#source-image").show();
+      $("#plot-content").show();
 
-      run();
+      $(".input-image-panel").hide();
+
+      $("#input-image-plot").hide();
+      $("#kmeans-plot").hide();
+      $("#median-cut-plot").hide();
     };
   })(file);
 
   reader.readAsDataURL(file);
 }
 
+var pixels = null;
 function run(){
+  var imgWidth = image.width;
+  var imgHeight = image.height;
+  var maxDimension = imgWidth > imgHeight ? imgWidth : imgHeight;
+
+  var scale = maxDimension / 75;
+  var canvasHeight = parseInt(imgHeight / scale);
+  var canvasWidth = parseInt(imgWidth / scale);
+
   var canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
-  canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  canvas.getContext('2d').drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
   console.log("Canvas size: " + canvas.width + "x" + canvas.height);
   var pixelData = canvas.getContext('2d').getImageData(0, 0, 1, 1).data;
   console.log("pixel data: " + pixelData);
 
-  var pixels = [];
+  pixels = [];
   for (var x=0; x < canvas.width; x++){
     for (var y=0; y < canvas.height; y++){
       var pixel = canvas.getContext('2d').getImageData(x, y, 1, 1).data;
@@ -55,9 +69,26 @@ function run(){
     }
   }
 
+  console.log("read image, found " + pixels.length + " pixels");
+
+  // plotOriginalData(pixels);
+  // result = kMeansAndPlot(pixels, 10, 100);
+  // medianCutAndPlot(pixels, 7);
+}
+
+function plotImage() {
+  run();
   plotOriginalData(pixels);
-  result = kMeansAndPlot(pixels, 7, 25);
+}
+
+function runMedianCut() {
+  run();
   medianCutAndPlot(pixels, 7);
+}
+
+function runKMeans(){
+  run();
+  kMeansAndPlot(pixels, 10, 100);
 }
 
 function plotOriginalData(pixels) {
@@ -86,7 +117,9 @@ function plotOriginalData(pixels) {
     margin: { l:0, r:0, b: 0, t: 0 }
   };
 
-  Plotly.newPlot('plot', [data], layout);
+  Plotly.newPlot('input-image-plot', [data], layout);
+  $("#input-image-plot").show();
+  $(".input-image-panel").show();
 }
 
 function medianCutAndPlot(pixels, partitions) {
@@ -96,7 +129,8 @@ function medianCutAndPlot(pixels, partitions) {
   _.each(groups, function(g){
     console.log("Cluster: " + g.length + " points");
   });
-  plotClusters(groups, "plot2");
+  plotClusters(groups, "median-cut-plot");
+  $("#median-cut-plot").show();
 }
 
 // =======================================================
@@ -108,17 +142,17 @@ function kMeansAndPlot(pixels, k, numRuns) {
   var bestError = Infinity;
 
   for(var attempt=0; attempt<numRuns; attempt++) {
-    result = runKMeans(pixels, k);
+    result = kMeans(pixels, k);
     if(result.error < bestError) {
       bestResult = result.groups;
       bestError = result.error;
     }
   }
-  plotClusters(bestResult, "plot3");
-  return bestResult;
+  plotClusters(bestResult, "kmeans-plot");
+  $("#kmeans-plot").show();
 }
 
-function runKMeans(pixels, k) {
+function kMeans(pixels, k) {
   // randomly initialize means
   var means = [];
   for(m=0; m<k; m++){

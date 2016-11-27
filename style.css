@@ -7,43 +7,63 @@
     display: none;
 }
 
-#original-image{
+#source-image{
     margin-left: auto;
     margin-right: auto;
-    background: black;
-    width: 500px;
-    height: 500px;
-    display: block;
+    width: 200px;
+    height: 200px;
+    display: none;
 }
 
-#plot {
-    width: 500px;
-    height: 500px;
-    background: red;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 25px;
-    display: block;
+.original-image {
 }
 
-#plot2 {
-    margin-left: auto;
-    margin-right: auto;
-    width: 500px;
-    height: 500px;
-    background: green;
-    margin-top: 25px;
-    margin-left: auto;
-    margin-right: auto;
+#plot-content {
+    display:none;
 }
 
-#plot3 {
+.input-image-panel {
+    display: flex;
+    align-items: center;
+    padding-bottom: 50px;
+}
+
+.input-image-panel-left {
+    margin-left: 150px;
+    margin-top: 50px;
+}
+
+.input-image-panel-left img {
+    width: 300px;
+    height: 300px;
+}
+
+.input-image-panel-right {
+}
+
+#input-image-plot {
     margin-left: auto;
     margin-right: auto;
-    width: 500px;
-    height: 500px;
-    background: blue;
+    width: 600px;
+    height: 400px;
     margin-top: 25px;
+    display: none;
+}
+
+#median-cut-plot {
     margin-left: auto;
     margin-right: auto;
+    width: 600px;
+    height: 400px;
+    margin-top: 25px;
+    display: none;
+}
+
+#kmeans-plot {
+    margin-left: auto;
+    margin-right: auto;
+    width: 600px;
+    height: 400px;
+    margin-top: 25px;
+    display: none;
 }
