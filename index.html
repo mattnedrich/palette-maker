@@ -15,18 +15,11 @@
 
             <input type="file" id="files" name="files[]" multiple />
 
-            <img id="source-image" class="original-image">
-
             <div id="plot-content">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Input Image</div>
-                    <div class="panel-body input-image">
-                        <button type="button" class="btn btn-primary" onclick="plotImage()">Plot Input Image</button>
-                        <br />
-                        <div class="input-image-panel" >
-                            <div class="input-image-panel-left"> <img  class="original-image" > </div>
-                            <div class="input-image-panel-right" id="input-image-plot"></div>
-                        </div>
+                <div class="input-image">
+                    <div class="input-image-panel" >
+                        <div class="input-image-panel-left"> <img id="original-image" > </div>
+                        <div class="input-image-panel-right" id="input-image-plot"></div>
                     </div>
                 </div>
                 <div class="panel panel-default">

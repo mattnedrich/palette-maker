@@ -31,11 +31,13 @@
 .input-image-panel-left {
     margin-left: 150px;
     margin-top: 50px;
+    width: 300px;
+    height: 300px;
 }
 
 .input-image-panel-left img {
-    width: 300px;
-    height: 300px;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .input-image-panel-right {

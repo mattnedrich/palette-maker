@@ -18,11 +18,12 @@ function handleFileSelect(evt) {
 
   reader.onload = (function(theFile) {
     return function(e) {
-      images = document.getElementsByClassName('original-image');
-      _.each(images, function(i){
-        i.src = e.target.result;
-        image = i;
-      });
+      image = document.getElementById('original-image');
+      image.src = e.target.result;
+      // _.each(images, function(i){
+      //   i.src = e.target.result;
+      //   image = i;
+      // });
 
       $("#source-image").show();
       $("#plot-content").show();
@@ -348,3 +349,17 @@ function determineGroupToSplit(groups) {
 };
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+var timerId = setInterval(showImageIfPossible, 1000);
+
+function showImageIfPossible() {
+  var imageSrc = document.getElementById("original-image").src;
+  console.log("imageSrc is " + imageSrc);
+  if(!_.isEmpty(imageSrc)) {
+    clearInterval(timerId);
+    run();
+    plotOriginalData(pixels);
+  } else {
+    console.log("tick");
+  }
+}
