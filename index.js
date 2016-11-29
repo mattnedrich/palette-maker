@@ -29,10 +29,14 @@ function handleFileSelect(evt) {
       $("#plot-content").show();
 
       $(".input-image-panel").hide();
-
       $("#input-image-plot").hide();
-      $("#kmeans-plot").hide();
+
+      $("#histogram-plot").hide();
+      $("#histogram-palette").hide();
+
       $("#median-cut-plot").hide();
+
+      $("#kmeans-plot").hide();
     };
   })(file);
 
@@ -45,7 +49,7 @@ function run(){
   var imgHeight = image.height;
   var maxDimension = imgWidth > imgHeight ? imgWidth : imgHeight;
 
-  var scale = maxDimension / 75;
+  var scale = maxDimension / 100;
   var canvasHeight = parseInt(imgHeight / scale);
   var canvasWidth = parseInt(imgWidth / scale);
 
@@ -78,18 +82,96 @@ function run(){
 }
 
 function plotImage() {
-  run();
+  // run();
   plotOriginalData(pixels);
 }
 
+function runHistogram() {
+  // run();
+  histogramAndPlot(pixels, 2);
+}
+
 function runMedianCut() {
-  run();
+  // run();
   medianCutAndPlot(pixels, 7);
 }
 
 function runKMeans(){
-  run();
+  // run();
   kMeansAndPlot(pixels, 10, 100);
+}
+
+function getKeyForPixel(pixel, bucketsPerDimension) {
+  var bucketSize = 256 / bucketsPerDimension;
+  var redBucket = Math.floor(pixel.red / bucketSize);
+  var greenBucket = Math.floor(pixel.green / bucketSize);
+  var blueBucket = Math.floor(pixel.blue / bucketSize);
+  var key = redBucket + ":" + greenBucket + ":" + blueBucket;
+  return key;
+}
+
+function pixelToString(pixel) {
+  return "r: " + pixel.red + ", g: " + pixel.green + ", b: " + pixel.blue;
+}
+function histogramAndPlot(pixels, bucketsPerDimension) {
+  var bucketMap = {};
+  _.each(pixels, function(pixel){
+    var key = getKeyForPixel(pixel, bucketsPerDimension);
+    if(key in bucketMap) {
+      bucketMap[key].push(pixel);
+    } else {
+      bucketMap[key] = [pixel];
+      console.log("adding bucket: " + key + "for pixel " + pixelToString(pixel));
+    }
+  });
+
+  // find the top N buckets
+  var buckets = _.values(bucketMap);
+  var sortedBuckets = _.sortBy(buckets, function(bucket) {return bucket.length; });
+
+  // plot code
+  var colors = _.map(pixels, function(p, index){
+    var key = getKeyForPixel(p, bucketsPerDimension);
+    var pixelsInBucket = bucketMap[key];
+    var averageColor = computeAverageColor(pixelsInBucket);
+    return "rgb(" + averageColor.red + "," + averageColor.green + "," + averageColor.blue + ")";
+  });
+
+  var data = {
+    x: _.map(pixels, function(p){ return p.red; }),
+    y: _.map(pixels, function(p){ return p.green; }),
+    z: _.map(pixels, function(p){ return p.blue; }),
+    mode: 'markers',
+    marker: {
+      size: 3,
+      color: colors,
+      line: {
+        color: 'rgb(100,100,100)',
+        width: 1
+      }
+    },
+    type: 'scatter3d'
+  };
+
+  var layout = {
+    margin: { l:0, r:0, b: 0, t: 0 }
+  };
+
+  Plotly.newPlot('histogram-plot', [data], layout);
+  $("#histogram-plot").show();
+
+  var paletteTableString = "";
+  _.each(sortedBuckets, function(bucket) {
+    var averageColor = computeAverageColor(bucket);
+    paletteTableString += "<tr>";
+    paletteTableString += "<td>";
+    paletteTableString += "red: " + averageColor.red + "green: " + averageColor.green + "blue: " + averageColor.blue;
+    paletteTableString += "</td>";
+    paletteTableString += "</tr>";
+  });
+  $("#histogram-palette").append("<table class=\"table\">" + paletteTableString + "</table");
+
+  $("#histogram-palette").show();
 }
 
 function plotOriginalData(pixels) {
@@ -354,7 +436,7 @@ var timerId = setInterval(showImageIfPossible, 1000);
 
 function showImageIfPossible() {
   var imageSrc = document.getElementById("original-image").src;
-  console.log("imageSrc is " + imageSrc);
+  // console.log("imageSrc is " + imageSrc);
   if(!_.isEmpty(imageSrc)) {
     clearInterval(timerId);
     run();

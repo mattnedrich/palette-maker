@@ -23,6 +23,14 @@
                     </div>
                 </div>
                 <div class="panel panel-default">
+                    <div class="panel-heading">Color Palette using Histogram Bucketing</div>
+                    <div class="panel-body histogram">
+                        <button type="button" class="btn btn-primary" onclick="runHistogram()">Run Histogram</button>
+                        <div id="histogram-plot"></div>
+                        <div id="histogram-palette"></div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
                     <div class="panel-heading">Color Palette using Median Cut</div>
                     <div class="panel-body median-cut">
                         <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
@@ -40,4 +48,5 @@
         </div>
     </body>
 </html>
+
 <script src="index.js"></script>
