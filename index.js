@@ -6,6 +6,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 var image = null;
+var timerId;
 function handleFileSelect(evt) {
   var file = evt.target.files[0]; // FileList object
 
@@ -31,16 +32,27 @@ function handleFileSelect(evt) {
       $(".input-image-panel").hide();
       $("#input-image-plot").hide();
 
-      $("#histogram-plot").hide();
-      $("#histogram-palette").hide();
+      $("#histogram-output").hide();
+      $("#median-cut-output").hide();
+      $("#kmeans-output").hide();
 
-      $("#median-cut-plot").hide();
-
-      $("#kmeans-plot").hide();
     };
   })(file);
 
+  $("#original-image").attr("src","");
+  timerId = setInterval(showImageIfPossible, 1000);
   reader.readAsDataURL(file);
+}
+
+function showImageIfPossible() {
+  var imageSrc = document.getElementById("original-image").src;
+  if(!_.isEmpty(imageSrc)) {
+    clearInterval(timerId);
+    run();
+    plotOriginalData(pixels);
+  } else {
+    console.log("tick");
+  }
 }
 
 var pixels = null;
@@ -75,31 +87,52 @@ function run(){
   }
 
   console.log("read image, found " + pixels.length + " pixels");
-
-  // plotOriginalData(pixels);
-  // result = kMeansAndPlot(pixels, 10, 100);
-  // medianCutAndPlot(pixels, 7);
 }
 
 function plotImage() {
-  // run();
   plotOriginalData(pixels);
 }
 
+// ========================================================================================
+// =================================== Entry Functions ====================================
+// ========================================================================================
+function resetAlgorithmOutputs(){
+  removePaletteTable("#histogram-palette");
+  $("#histogram-output").hide();
+
+  removePaletteTable("#median-cut-palette");
+  $("#median-cut-output").hide();
+
+  removePaletteTable("#kmeans-palette");
+  $("#kmeans-output").hide();
+}
+
 function runHistogram() {
-  // run();
-  histogramAndPlot(pixels, 2);
+  removePaletteTable("#histogram-palette");
+  $("#histogram-output").hide();
+  var histogramInputValue = parseInt($("#histogram-input").val());
+  console.log("running histogram with grid size of " + histogramInputValue);
+  histogramAndPlot(pixels, histogramInputValue);
 }
 
 function runMedianCut() {
-  // run();
-  medianCutAndPlot(pixels, 7);
+  removePaletteTable("#median-cut-palette");
+  $("#median-cut-output").hide();
+  var medianCutInputValue = parseInt($("#median-cut-input").val());
+  console.log("running median cut with input " + medianCutInputValue);
+  medianCutAndPlot(pixels, medianCutInputValue);
 }
 
 function runKMeans(){
-  // run();
-  kMeansAndPlot(pixels, 10, 100);
+  removePaletteTable("#kmeans-palette");
+  $("#kmeans-output").hide();
+  var kMeansInputValue = parseInt($("#kmeans-input").val());
+  console.log("running kmeans with input " + kMeansInputValue);
+  kMeansAndPlot(pixels, kMeansInputValue, 100);
 }
+// ========================================================================================
+// ========================================================================================
+// ========================================================================================
 
 function getKeyForPixel(pixel, bucketsPerDimension) {
   var bucketSize = 256 / bucketsPerDimension;
@@ -114,11 +147,20 @@ function pixelToString(pixel) {
   return "r: " + pixel.red + ", g: " + pixel.green + ", b: " + pixel.blue;
 }
 
+function numberToPaddedHexString(number) {
+  var hexString = parseInt(number).toString(16);
+  if(hexString.length == 1) {
+    return "0" + hexString;
+  }
+  return hexString
+}
+
 function pixelToHexString(pixel) {
-  return "#" +
-         parseInt(pixel.red).toString(16) +
-         parseInt(pixel.green).toString(16) +
-         parseInt(pixel.blue).toString(16);
+  var hexString = "#" +
+                  numberToPaddedHexString(pixel.red) +
+                  numberToPaddedHexString(pixel.green) +
+                  numberToPaddedHexString(pixel.blue);
+  return hexString;
 }
 
 function getColorPreviewHtmlString(color) {
@@ -211,10 +253,10 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
   };
 
   Plotly.newPlot('histogram-plot', [data], layout);
-  $("#histogram-plot").show();
 
-  // palette code ==================================================================
   drawPaletteTable("#histogram-palette", sortedBuckets);
+
+  $("#histogram-output").show();
 }
 
 function plotOriginalData(pixels) {
@@ -256,9 +298,8 @@ function medianCutAndPlot(pixels, partitions) {
     console.log("Cluster: " + g.length + " points");
   });
   plotClusters(groups, "median-cut-plot");
-  $("#median-cut-plot").show();
-
   drawPaletteTable("#median-cut-palette", groups);
+  $("#median-cut-output").show();
 }
 
 // =======================================================
@@ -277,9 +318,8 @@ function kMeansAndPlot(pixels, k, numRuns) {
     }
   }
   plotClusters(bestResult, "kmeans-plot");
-  $("#kmeans-plot").show();
-
   drawPaletteTable("#kmeans-palette", bestResult);
+  $("#kmeans-output").show();
 }
 
 function kMeans(pixels, k) {
@@ -479,16 +519,3 @@ function determineGroupToSplit(groups) {
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
-var timerId = setInterval(showImageIfPossible, 1000);
-
-function showImageIfPossible() {
-  var imageSrc = document.getElementById("original-image").src;
-  // console.log("imageSrc is " + imageSrc);
-  if(!_.isEmpty(imageSrc)) {
-    clearInterval(timerId);
-    run();
-    plotOriginalData(pixels);
-  } else {
-    console.log("tick");
-  }
-}

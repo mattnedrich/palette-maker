@@ -33,11 +33,21 @@
     margin-top: 50px;
     width: 400px;
     height: 400px;
+    display: inline-block;
+    position: relative;
 }
 
 .input-image-panel-left img {
     max-width: 100%;
     max-height: 100%;
+    height: auto;
+    width: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
 }
 
 .input-image-panel-right {
@@ -49,6 +59,17 @@
     width: 600px;
     height: 400px;
     margin-top: 25px;
+}
+
+#histogram-output {
+    display: none;
+}
+
+#median-cut-output {
+    display: none;
+}
+
+#kmeans-output {
     display: none;
 }
 
@@ -58,7 +79,6 @@
     width: 600px;
     height: 400px;
     margin-top: 25px;
-    display: none;
 }
 
 #median-cut-plot {
@@ -67,7 +87,6 @@
     width: 600px;
     height: 400px;
     margin-top: 25px;
-    display: none;
 }
 
 #kmeans-plot {
@@ -76,7 +95,6 @@
     width: 600px;
     height: 400px;
     margin-top: 25px;
-    display: none;
 }
 
 .colorPreview {

@@ -25,25 +25,55 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Color Palette using Histogram Bucketing</div>
                     <div class="panel-body histogram">
-                        <button type="button" class="btn btn-primary" onclick="runHistogram()">Run Histogram</button>
-                        <div id="histogram-plot"></div>
-                        <div id="histogram-palette"></div>
+                        <div class="form-inline">
+                            <div class="form-group">
+                            <button type="button" class="btn btn-primary run-histogram-button" onclick="runHistogram()">Run Histogram</button>
+                                <div class="input-group">
+                                    <div class="input-group-addon">Histogram Grid Size</div>
+                                    <input class="form-control" type="number" placeholder="e.g., 3" id="histogram-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="histogram-output">
+                            <div id="histogram-plot"></div>
+                            <div id="histogram-palette"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">Color Palette using Median Cut</div>
                     <div class="panel-body median-cut">
-                        <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
-                        <div id="median-cut-plot"></div>
-                        <div id="median-cut-palette"></div>
+                        <div class="form-inline">
+                            <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Partitions</div>
+                                    <input class="form-control" type="number" placeholder="e.g., 3" id="median-cut-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="median-cut-output">
+                            <div id="median-cut-plot"></div>
+                            <div id="median-cut-palette"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">Color Palette using KMeans</div>
                     <div class="panel-body kmeans-cut">
-                        <button type="button" class="btn btn-primary" onclick="runKMeans()">Run KMeans</button>
-                        <div id="kmeans-plot"></div>
-                        <div id="kmeans-palette"></div>
+                        <div class="form-inline">
+                            <button type="button" class="btn btn-primary" onclick="runKMeans()">Run KMeans</button>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-addon">k</div>
+                                    <input class="form-control" type="number" placeholder="e.g., 6" id="kmeans-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="kmeans-output">
+                            <div id="kmeans-plot"></div>
+                            <div id="kmeans-palette"></div>
+                        </div>
                     </div>
                 </div>
             </div>
