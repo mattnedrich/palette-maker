@@ -52,6 +52,15 @@
     display: none;
 }
 
+#histogram-plot {
+    margin-left: auto;
+    margin-right: auto;
+    width: 600px;
+    height: 400px;
+    margin-top: 25px;
+    display: none;
+}
+
 #median-cut-plot {
     margin-left: auto;
     margin-right: auto;
@@ -68,4 +77,10 @@
     height: 400px;
     margin-top: 25px;
     display: none;
+}
+
+.colorPreview {
+    border: 1px solid lightgray;
+    width: 200px;
+    height: 30px;
 }

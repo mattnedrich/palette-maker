@@ -113,6 +113,59 @@ function getKeyForPixel(pixel, bucketsPerDimension) {
 function pixelToString(pixel) {
   return "r: " + pixel.red + ", g: " + pixel.green + ", b: " + pixel.blue;
 }
+
+function pixelToHexString(pixel) {
+  return "#" +
+         parseInt(pixel.red).toString(16) +
+         parseInt(pixel.green).toString(16) +
+         parseInt(pixel.blue).toString(16);
+}
+
+function getColorPreviewHtmlString(color) {
+  var color = pixelToHexString(color);
+  return "<div class=\"colorPreview\" style=\"background:" + color + "\"></div>";
+}
+
+function removePaletteTable(containerId) {
+  $(containerId).empty();
+}
+
+function drawPaletteTable(containerId, pixelGroups) {
+  var paletteTableString = "";
+
+  // Table Header
+  paletteTableString += "<tr>";
+  paletteTableString += "<th>Color Code</th>";
+  paletteTableString += "<th>Color</th>";
+  paletteTableString += "<th>Percent</th>";
+  paletteTableString += "</tr>";
+
+  var totalPixels = _.chain(pixelGroups)
+                     .map(function(b) {return b.length;})
+                     .sum()
+                     .value();
+
+  pixelGroups = _.sortBy(pixelGroups, function(pg) {return pg.length;}).reverse();
+
+  _.each(pixelGroups, function(group) {
+    var averageColor = computeAverageColor(group);
+    var percent = group.length / totalPixels;
+    paletteTableString += "<tr>";
+    paletteTableString += "<td>";
+    paletteTableString += pixelToHexString(averageColor);
+    paletteTableString += "</td>";
+    paletteTableString += "<td>";
+    paletteTableString += getColorPreviewHtmlString(averageColor);
+    paletteTableString += "</td>";
+    paletteTableString += "<td>";
+    paletteTableString += percent;
+    paletteTableString += "</td>";
+    paletteTableString += "</tr>";
+  });
+  $(containerId).append("<table class=\"table\">" + paletteTableString + "</table");
+  $(containerId).show();
+}
+
 function histogramAndPlot(pixels, bucketsPerDimension) {
   var bucketMap = {};
   _.each(pixels, function(pixel){
@@ -127,7 +180,7 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
 
   // find the top N buckets
   var buckets = _.values(bucketMap);
-  var sortedBuckets = _.sortBy(buckets, function(bucket) {return bucket.length; });
+  var sortedBuckets = _.sortBy(buckets, function(bucket) {return bucket.length; }).reverse();
 
   // plot code
   var colors = _.map(pixels, function(p, index){
@@ -160,18 +213,8 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
   Plotly.newPlot('histogram-plot', [data], layout);
   $("#histogram-plot").show();
 
-  var paletteTableString = "";
-  _.each(sortedBuckets, function(bucket) {
-    var averageColor = computeAverageColor(bucket);
-    paletteTableString += "<tr>";
-    paletteTableString += "<td>";
-    paletteTableString += "red: " + averageColor.red + "green: " + averageColor.green + "blue: " + averageColor.blue;
-    paletteTableString += "</td>";
-    paletteTableString += "</tr>";
-  });
-  $("#histogram-palette").append("<table class=\"table\">" + paletteTableString + "</table");
-
-  $("#histogram-palette").show();
+  // palette code ==================================================================
+  drawPaletteTable("#histogram-palette", sortedBuckets);
 }
 
 function plotOriginalData(pixels) {
@@ -214,6 +257,8 @@ function medianCutAndPlot(pixels, partitions) {
   });
   plotClusters(groups, "median-cut-plot");
   $("#median-cut-plot").show();
+
+  drawPaletteTable("#median-cut-palette", groups);
 }
 
 // =======================================================
@@ -233,6 +278,8 @@ function kMeansAndPlot(pixels, k, numRuns) {
   }
   plotClusters(bestResult, "kmeans-plot");
   $("#kmeans-plot").show();
+
+  drawPaletteTable("#kmeans-palette", bestResult);
 }
 
 function kMeans(pixels, k) {
