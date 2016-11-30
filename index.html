@@ -13,7 +13,12 @@
     <body>
         <div class="container">
 
-            <input type="file" id="files" name="files[]" multiple />
+            <div class="panel panel-default">
+                <div class="panel-heading">Choose Input Image</div>
+                <div class="panel-body histogram">
+                    <input type="file" id="files" name="files[]" multiple />
+                </div>
+            </div>
 
             <div id="plot-content">
                 <div class="input-image">
@@ -22,12 +27,20 @@
                         <div class="input-image-panel-right" id="input-image-plot"></div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">Color Palette using Histogram Bucketing</div>
-                    <div class="panel-body histogram">
+
+                <div>
+                    <ul class="nav nav-tabs nav-justified">
+                        <li class="active"><a href="#histogram-tab" data-toggle="tab">Histogram</a></li>
+                        <li><a href="#median-cut-tab" data-toggle="tab">Median Cut</a></li>
+                        <li><a href="#kmeans-tab" data-toggle="tab">KMeans</a></li>
+                    </ul>
+                </div>
+
+                <div class="tab-content algorithm-output">
+                    <div class="tab-pane fade in active panel-body" id="histogram-tab">
                         <div class="form-inline">
                             <div class="form-group">
-                            <button type="button" class="btn btn-primary run-histogram-button" onclick="runHistogram()">Run Histogram</button>
+                                <button type="button" class="btn btn-primary run-histogram-button" onclick="runHistogram()">Run Histogram</button>
                                 <div class="input-group">
                                     <div class="input-group-addon">Histogram Grid Size</div>
                                     <input class="form-control" type="number" placeholder="e.g., 3" id="histogram-input">
@@ -39,10 +52,8 @@
                             <div id="histogram-palette"></div>
                         </div>
                     </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">Color Palette using Median Cut</div>
-                    <div class="panel-body median-cut">
+
+                    <div class="tab-pane fade panel-body" id="median-cut-tab">
                         <div class="form-inline">
                             <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
                             <div class="form-group">
@@ -57,10 +68,8 @@
                             <div id="median-cut-palette"></div>
                         </div>
                     </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">Color Palette using KMeans</div>
-                    <div class="panel-body kmeans-cut">
+
+                    <div class="tab-pane fade panel-body" id="kmeans-tab">
                         <div class="form-inline">
                             <button type="button" class="btn btn-primary" onclick="runKMeans()">Run KMeans</button>
                             <div class="form-group">
@@ -75,6 +84,7 @@
                             <div id="kmeans-palette"></div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

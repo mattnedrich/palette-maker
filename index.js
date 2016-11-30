@@ -249,7 +249,17 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
   };
 
   var layout = {
-    margin: { l:0, r:0, b: 0, t: 0 }
+    title: "Histogram Binned Colors",
+    margin: { l:0, r:0, b: 0, t: 0 },
+    xaxis: {
+      title: "Red"
+    },
+    yaxis: {
+      title: "Green"
+    },
+    zaxis: {
+      title: "Blue"
+    }
   };
 
   Plotly.newPlot('histogram-plot', [data], layout);
