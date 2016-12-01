@@ -720,8 +720,16 @@ function splitGroup(group, splitInfo) {
 function determineGroupToSplit(groups) {
   groupStats = _.map(groups, function(group, index){
     var reds = _.map(group.points, function(point){ return point.red; });
-    var blues = _.map(group.points, function(point){ return point.blue; });
     var greens = _.map(group.points, function(point){ return point.green; });
+    var blues = _.map(group.points, function(point){ return point.blue; });
+
+    var sumRed = _.sum(reds);
+    var sumGreen = _.sum(greens);
+    var sumBlue = _.sum(blues);
+
+    var avgRed = sumRed / reds.length;
+    var avgGreen = sumGreen / greens.length;
+    var avgBlue = sumBlue / blues.length;
 
     var stats = [];
     stats.push({
@@ -730,7 +738,13 @@ function determineGroupToSplit(groups) {
       name: "red",
       splitDimension: "x",
       index: 0,
-      range: _.max(reds) - _.min(reds)
+      range: _.max(reds) - _.min(reds),
+      variance: _.chain(reds)
+                 .map(function(red) {
+                   return (red - avgRed) * (red - avgRed);
+                 })
+                 .sum()
+                 .value()
     });
     stats.push({
       groupIndex: index,
@@ -738,7 +752,13 @@ function determineGroupToSplit(groups) {
       name: "green",
       splitDimension: "y",
       index: 1,
-      range: _.max(greens) - _.min(greens)
+      range: _.max(greens) - _.min(greens),
+      variance: _.chain(greens)
+                 .map(function(green) {
+                   return (green - avgGreen) * (green - avgGreen);
+                 })
+                 .sum()
+                 .value()
     });
     stats.push({
       groupIndex: index,
@@ -746,7 +766,13 @@ function determineGroupToSplit(groups) {
       name: "blue",
       splitDimension: "z",
       index: 2,
-      range: _.max(blues) - _.min(blues)
+      range: _.max(blues) - _.min(blues),
+      variance: _.chain(blues)
+                 .map(function(blue) {
+                   return (blue - avgBlue) * (blue - avgBlue);
+                 })
+                 .sum()
+                 .value()
     });
 
     return _.last(_.sortBy(stats, 'range'));
