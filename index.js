@@ -138,6 +138,10 @@ function getKeyForPixel(pixel, bucketsPerDimension) {
   return key;
 }
 
+function getPixelLuminance(pixel) {
+  return (pixel.red * 0.2126) + (pixel.green * 0.7152) + (pixel.blue * 0.0722);
+}
+
 function pixelToString(pixel) {
   return "r: " + pixel.red + ", g: " + pixel.green + ", b: " + pixel.blue;
 }
@@ -182,7 +186,11 @@ function drawPaletteTable(containerId, pixelGroups) {
                      .sum()
                      .value();
 
-  pixelGroups = _.sortBy(pixelGroups, function(pg) {return pg.length;}).reverse();
+  pixelGroups = _.sortBy(pixelGroups, function(pg) {
+    var averageColor = computeAverageColor(pg);
+    var luminance = getPixelLuminance(averageColor);
+    return luminance;
+  }).reverse();
 
   _.each(pixelGroups, function(group) {
     var averageColor = computeAverageColor(group);
