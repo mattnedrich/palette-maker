@@ -126,7 +126,7 @@ function runKMeans(){
   kMeansAndPlot(pixels, kMeansInputValue, 100);
 }
 // ========================================================================================
-// ========================================================================================
+// =========================== Pixel Helper Functions =====================================
 // ========================================================================================
 
 function getKeyForPixel(pixel, bucketsPerDimension) {
@@ -166,6 +166,10 @@ function getColorPreviewHtmlString(color) {
   var color = pixelToHexString(color);
   return "<div class=\"colorPreview\" style=\"background:" + color + "\"></div>";
 }
+
+// ========================================================================================
+// ========================================================================================
+// ========================================================================================
 
 function removePaletteTable(containerId) {
   $(containerId).empty();
@@ -248,10 +252,47 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
         width: 1
       }
     },
+    name: "points",
     type: 'scatter3d'
   };
 
+  var planes = computeMeshesForHist(bucketsPerDimension);
+  var meshes = _.map(planes, function(plane) {
+    var allX = _.map(plane, function(point) {
+      return point.x;
+    });
+    var allY = _.map(plane, function(point) {
+      return point.y;
+    });
+    var allZ = _.map(plane, function(point) {
+      return point.z;
+    });
+    return {
+      opacity:0.175,
+      color:'rgb(100,100,100)',
+      type: 'mesh3d',
+      x: allX,
+      y: allY,
+      z: allZ,
+      name: "grid"
+    };
+  });
+
+  var allItemsToPlot = meshes;
+  allItemsToPlot.push(data);
+  /* var testMesh = {
+   *   opacity:0.2,
+   *   color:'rgb(100,100,100)',
+   *   type: 'mesh3d',
+   *   x: [0,255,255,0],
+   *   y: [0,0,255,255],
+   *   z: [100,100,100,100]
+   * };
+   */
   var layout = {
+    legend: {
+      type: "grid",
+    },
     margin: { l:0, r:0, b: 0, t: 0 },
     scene: {
       xaxis: { title: "Red" },
@@ -260,12 +301,53 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
     }
   };
 
-  Plotly.newPlot('histogram-plot', [data], layout);
+  Plotly.newPlot('histogram-plot', allItemsToPlot, layout);
 
   var bucketsInPalette = _.take(sortedBuckets, 10);
   drawPaletteTable("#histogram-palette", bucketsInPalette);
 
   $("#histogram-output").show();
+}
+
+function computeMeshesForHist(bucketsPerDimension){
+  var bucketSize = (255 / bucketsPerDimension);
+  var numPlanes = bucketsPerDimension - 1;
+  var planes = []
+
+  // small offsets are used to get around plotting limitations
+  var currentHeight = bucketSize;
+  _.times(numPlanes, function(){
+    planes.push(
+      [{x: currentHeight, y: 0, z: 0},
+       {x: currentHeight+0.1, y: 255, z: 0},
+       {x: currentHeight+0.2, y: 255, z: 255},
+       {x: currentHeight+0.3, y: 0, z: 255}]
+    );
+    currentHeight += bucketSize;
+  });
+
+  currentHeight = bucketSize;
+  _.times(numPlanes, function(){
+    planes.push(
+      [{z: currentHeight, y: 0, x: 0},
+       {z: currentHeight, y: 255, x: 0},
+       {z: currentHeight, y: 255, x: 255},
+       {z: currentHeight, y: 0, x: 255}]
+    );
+    currentHeight += bucketSize;
+  });
+
+  currentHeight = bucketSize;
+  _.times(numPlanes, function(){
+    planes.push(
+      [{y: currentHeight, x: 0, z: 0},
+       {y: currentHeight+0.1, x: 255, z: 0},
+       {y: currentHeight+0.2, x: 255, z: 255},
+       {y: currentHeight+0.3, x: 0, z: 255}]
+    );
+    currentHeight += bucketSize;
+  });
+  return planes;
 }
 
 function plotOriginalData(pixels) {
@@ -311,7 +393,49 @@ function medianCutAndPlot(pixels, partitions) {
   _.each(groups, function(g){
     console.log("Cluster: " + g.length + " points");
   });
-  plotClusters(groups, "median-cut-plot");
+  /* plotClusters(groups, "median-cut-plot");
+   */
+  var data = _.map(groups, function(group){
+    var avgColor = computeAverageColor(group);
+    var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
+    return {
+      x: _.map(group, function(p){ return p.red; }),
+      y: _.map(group, function(p){ return p.green; }),
+      z: _.map(group, function(p){ return p.blue; }),
+      mode: 'markers',
+      marker: {
+        color: colorString,
+        size: 3,
+        line: {
+          color: 'rgb(100,100,100)',
+          width: 1
+        }
+      },
+      type: 'scatter3d'
+    };
+  });
+
+  var layout = {
+    margin: { l:0, r:0, b: 0, t: 0 },
+    scene: {
+      xaxis: { title: "Red" },
+      yaxis: { title: "Green"},
+      zaxis: { title: "Blue"}
+    }
+  };
+
+  var testMesh = {
+    opacity:0.2,
+    color:'rgb(100,100,100)',
+    type: 'mesh3d',
+    x: [0,255,255,0],
+    y: [0,0,255,255],
+    z: [100,100,100,100],
+    name: "foo"
+  };
+  data.push(testMesh);
+
+  Plotly.newPlot("median-cut-plot", data, layout);
   drawPaletteTable("#median-cut-palette", groups);
   $("#median-cut-output").show();
 }
@@ -461,6 +585,31 @@ function plotClusters(pointGroups, elementId){
   };
 
   Plotly.newPlot(elementId, data, layout);
+}
+
+function generateMeshForCut(xMin, xMax, yMin, yMax, zMin, zMax, dimensionToCut, cutLocation) {
+  if (dimensionToCut === "x") {
+    return {
+      [{x: cutLocation, y: yMin, z: zMin},
+       {x: cutLocation+0.1, y: yMax, z: zMin},
+       {x: cutLocation+0.2, y: yMax, z: zMax},
+       {x: cutLocation+0.3, y: yMin, z: zMax}]
+    };
+  } else if (dimensionToCut === "y") {
+    return {
+      [{x: xMin, y: cutLocation, z: zMin},
+       {x: xMax, y: cutLocation+0.1, z: zMin},
+       {x: xMax, y: cutLocation+0.2, z: zMax},
+       {x: xMin, y: cutLocation+0.3, z: zMax}]
+    };
+  } else if (dimensionToCut === "z") {
+    return {
+      [{x: xMin, y: yMin, z: cutLocation},
+       {x: xMax, y: yMin, z: cutLocation+0.1},
+       {x: xMax, y: yMax, z: cutLocation+0.2},
+       {x: xMin, y: yMax, z: cutLocation+0.3}]
+    };
+  }
 }
 
 function medianCut(pointGroups, currentIteration, maxIterations){
