@@ -23,7 +23,7 @@
             <div id="plot-content">
                 <div class="input-image">
                     <div class="input-image-panel" >
-                        <div class="input-image-panel-left"> <img id="original-image" > </div>
+                        <div class="input-image-panel-left"> <img class="img-thumbnail" id="original-image" > </div>
                         <div class="input-image-panel-right" id="input-image-plot"></div>
                     </div>
                 </div>
@@ -47,12 +47,12 @@
                                     <div class="input-group-addon">Histogram Grid Size</div>
                                     <input class="form-control" type="number" placeholder="e.g., 3" id="histogram-input">
                                 </div>
-                                <button type="button" class="btn btn-primary run-histogram-button" onclick="runHistogram()">Run Histogram</button>
+                                <button type="button" class="btn btn-primary run-histogram-button" onclick="runHistogram()">Run</button>
                             </div>
                         </div>
                         <div id="histogram-output">
                             <div class="panel panel-default">
-                                <div class="panel-heading plot-toggle-header">Histogram Pixel Bucketing Graph</div>
+                                <div class="panel-heading plot-toggle-header">Histogram Pixel Bucketing</div>
                                 <div class="panel-body">
                                     <div id="histogram-plot" class="cluster-plot"></div>
                                 </div>
@@ -72,11 +72,11 @@
                                     <input class="form-control" type="number" placeholder="e.g., 3" id="median-cut-input">
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
+                            <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run</button>
                         </div>
                         <div id="median-cut-output">
                             <div class="panel panel-default">
-                                <div class="panel-heading plot-toggle-header">Median Cut Pixel Grouping</div>
+                                <div class="panel-heading plot-toggle-header">Median Cut Space Partitioning</div>
                                 <div class="panel-body">
                                     <div id="median-cut-plot" class="cluster-plot"></div>
                                 </div>
@@ -96,7 +96,7 @@
                                     <input class="form-control" type="number" placeholder="e.g., 6" id="kmeans-input">
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="runKMeans()">Run KMeans</button>
+                            <button type="button" class="btn btn-primary" onclick="runKMeans()">Run</button>
                         </div>
                         <div id="kmeans-output">
                             <div class="panel panel-default">
