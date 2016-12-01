@@ -8,7 +8,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 var image = null;
 var timerId;
 function handleFileSelect(evt) {
-  var file = evt.target.files[0]; // FileList object
+  var file = evt.target.files[0];
 
   console.log("file is " + file);
 
@@ -21,10 +21,6 @@ function handleFileSelect(evt) {
     return function(e) {
       image = document.getElementById('original-image');
       image.src = e.target.result;
-      // _.each(images, function(i){
-      //   i.src = e.target.result;
-      //   image = i;
-      // });
 
       $("#source-image").show();
       $("#plot-content").show();
@@ -35,7 +31,6 @@ function handleFileSelect(evt) {
       $("#histogram-output").hide();
       $("#median-cut-output").hide();
       $("#kmeans-output").hide();
-
     };
   })(file);
 
@@ -200,7 +195,7 @@ function drawPaletteTable(containerId, pixelGroups) {
     paletteTableString += getColorPreviewHtmlString(averageColor);
     paletteTableString += "</td>";
     paletteTableString += "<td>";
-    paletteTableString += percent;
+    paletteTableString += (percent * 100).toFixed(2);
     paletteTableString += "</td>";
     paletteTableString += "</tr>";
   });
@@ -249,22 +244,18 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
   };
 
   var layout = {
-    title: "Histogram Binned Colors",
     margin: { l:0, r:0, b: 0, t: 0 },
-    xaxis: {
-      title: "Red"
-    },
-    yaxis: {
-      title: "Green"
-    },
-    zaxis: {
-      title: "Blue"
+    scene: {
+      xaxis: { title: "Red" },
+      yaxis: { title: "Green"},
+      zaxis: { title: "Blue"}
     }
   };
 
   Plotly.newPlot('histogram-plot', [data], layout);
 
-  drawPaletteTable("#histogram-palette", sortedBuckets);
+  var bucketsInPalette = _.take(sortedBuckets, 10);
+  drawPaletteTable("#histogram-palette", bucketsInPalette);
 
   $("#histogram-output").show();
 }
@@ -292,7 +283,12 @@ function plotOriginalData(pixels) {
   };
 
   var layout = {
-    margin: { l:0, r:0, b: 0, t: 0 }
+    margin: { l:0, r:0, b: 0, t: 0 },
+    scene: {
+      xaxis: { title: "Red" },
+      yaxis: { title: "Green"},
+      zaxis: { title: "Blue"}
+    }
   };
 
   Plotly.newPlot('input-image-plot', [data], layout);
@@ -448,7 +444,12 @@ function plotClusters(pointGroups, elementId){
   });
 
   var layout = {
-    margin: { l:0, r:0, b: 0, t: 0 }
+    margin: { l:0, r:0, b: 0, t: 0 },
+    scene: {
+      xaxis: { title: "Red" },
+      yaxis: { title: "Green"},
+      zaxis: { title: "Blue"}
+    }
   };
 
   Plotly.newPlot(elementId, data, layout);
@@ -527,5 +528,5 @@ function determineGroupToSplit(groups) {
   return groupToSplit;
 };
 
-document.getElementById('files').addEventListener('change', handleFileSelect, false);
+document.getElementById('file').addEventListener('change', handleFileSelect, false);
 

@@ -106,3 +106,8 @@
 .algorithm-output {
     height: 500px;
 }
+
+.algorithm-description {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
