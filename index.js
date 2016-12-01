@@ -387,7 +387,19 @@ function plotOriginalData(pixels) {
 }
 
 function medianCutAndPlot(pixels, partitions) {
-  var groups = medianCut([pixels], 0, partitions);
+  var groupsWithInfo = {
+    points: pixels,
+    xMin: 0,
+    xMax: 255,
+    yMin: 0,
+    yMax: 255,
+    zMin: 0,
+    zMax: 255
+  };
+
+  var result = medianCut([groupsWithInfo], [], 0, partitions);
+  var groups = _.map(result.groups, function(g) {return g.points;});
+  var cuts = result.cuts;
 
   console.log("=======================");
   _.each(groups, function(g){
@@ -424,16 +436,30 @@ function medianCutAndPlot(pixels, partitions) {
     }
   };
 
-  var testMesh = {
-    opacity:0.2,
-    color:'rgb(100,100,100)',
-    type: 'mesh3d',
-    x: [0,255,255,0],
-    y: [0,0,255,255],
-    z: [100,100,100,100],
-    name: "foo"
-  };
-  data.push(testMesh);
+  var meshes = _.map(cuts, function(cut) {
+    var allX = _.map(cut, function(point) {
+      return point.x;
+    });
+    var allY = _.map(cut, function(point) {
+      return point.y;
+    });
+    var allZ = _.map(cut, function(point) {
+      return point.z;
+    });
+    return {
+      opacity:0.175,
+      color:'rgb(100,100,100)',
+      type: 'mesh3d',
+      x: allX,
+      y: allY,
+      z: allZ,
+      name: "grid"
+    };
+  });
+
+  _.each(meshes, function(mesh) {
+    data.push(mesh);
+  });
 
   Plotly.newPlot("median-cut-plot", data, layout);
   drawPaletteTable("#median-cut-palette", groups);
@@ -589,77 +615,120 @@ function plotClusters(pointGroups, elementId){
 
 function generateMeshForCut(xMin, xMax, yMin, yMax, zMin, zMax, dimensionToCut, cutLocation) {
   if (dimensionToCut === "x") {
-    return {
-      [{x: cutLocation, y: yMin, z: zMin},
-       {x: cutLocation+0.1, y: yMax, z: zMin},
-       {x: cutLocation+0.2, y: yMax, z: zMax},
-       {x: cutLocation+0.3, y: yMin, z: zMax}]
-    };
+    return [
+      {x: cutLocation, y: yMin, z: zMin},
+      {x: cutLocation+0.1, y: yMax, z: zMin},
+      {x: cutLocation+0.2, y: yMax, z: zMax},
+      {x: cutLocation+0.3, y: yMin, z: zMax}
+    ];
   } else if (dimensionToCut === "y") {
-    return {
-      [{x: xMin, y: cutLocation, z: zMin},
-       {x: xMax, y: cutLocation+0.1, z: zMin},
-       {x: xMax, y: cutLocation+0.2, z: zMax},
-       {x: xMin, y: cutLocation+0.3, z: zMax}]
-    };
+    return [
+      {x: xMin, y: cutLocation, z: zMin},
+      {x: xMax, y: cutLocation+0.1, z: zMin},
+      {x: xMax, y: cutLocation+0.2, z: zMax},
+      {x: xMin, y: cutLocation+0.3, z: zMax}
+    ];
   } else if (dimensionToCut === "z") {
-    return {
-      [{x: xMin, y: yMin, z: cutLocation},
-       {x: xMax, y: yMin, z: cutLocation+0.1},
-       {x: xMax, y: yMax, z: cutLocation+0.2},
-       {x: xMin, y: yMax, z: cutLocation+0.3}]
-    };
+    return [
+      {x: xMin, y: yMin, z: cutLocation},
+      {x: xMax, y: yMin, z: cutLocation+0.1},
+      {x: xMax, y: yMax, z: cutLocation+0.2},
+      {x: xMin, y: yMax, z: cutLocation+0.3}
+    ];
   }
 }
 
-function medianCut(pointGroups, currentIteration, maxIterations){
+function medianCut(pointGroups, cuts, currentIteration, maxIterations){
   console.log("running medianCut with " + pointGroups.length + " groups");
   if (currentIteration > maxIterations) {
-    return pointGroups;
+    return {
+      groups: pointGroups,
+      cuts: cuts
+    };
   }
 
   // determine which group has the most variation in some dimension
   var groupToSplitInfo = determineGroupToSplit(pointGroups);
+
   console.log("will split based on " + groupToSplitInfo.name);
-  splitGroups = splitGroup(groupToSplitInfo.group, groupToSplitInfo);
+  result= splitGroup(groupToSplitInfo.group, groupToSplitInfo);
+  var splitGroups = result.groups;
+  var cut = result.cut;
+  cuts.push(cut);
 
   _.pullAt(pointGroups, groupToSplitInfo.groupIndex);
   _.each(splitGroups, function(g) {
     pointGroups.push(g);
   });
 
-  return medianCut(pointGroups, currentIteration + 1, maxIterations);
+  return medianCut(pointGroups, cuts, currentIteration + 1, maxIterations);
 };
 
-function splitGroup(points, splitInfo) {
-  var sortedPoints = _.sortBy(points, function(p){
+function splitGroup(group, splitInfo) {
+  var sortedPoints = _.sortBy(group.points, function(p){
     return p[splitInfo.name];
   });
   var medianIndex = parseInt(sortedPoints.length / 2);
   var medianValue = sortedPoints[medianIndex][splitInfo.name];
-  var groupA = [];
-  var groupB = [];
-  _.each(points, function(p){
+
+  var groupA = {
+    points: [],
+    xMin: group.xMin,
+    xMax: group.xMax,
+    yMin: group.yMin,
+    yMax: group.yMax,
+    zMin: group.zMin,
+    zMax: group.zMax
+  };
+  var groupB = {
+    points: [],
+    xMin: group.xMin,
+    xMax: group.xMax,
+    yMin: group.yMin,
+    yMax: group.yMax,
+    zMin: group.zMin,
+    zMax: group.zMax
+  };
+
+  var cut = null
+  if(splitInfo.splitDimension === "x"){
+    groupA.xMax = medianValue;
+    groupB.xMin = medianValue;
+  } else if (splitInfo.splitDimension === "y") {
+    groupB.yMin = medianValue;
+    groupA.yMax = medianValue;
+  } else if (splitInfo.splitDimension === "z") {
+    groupB.zMin = medianValue;
+    groupA.zMax = medianValue;
+  }
+
+  _.each(group.points, function(p){
     if (p[splitInfo.name] > medianValue){
-      groupA.push(p);
+      groupB.points.push(p);
     } else {
-      groupB.push(p);
+      groupA.points.push(p);
     }
   });
-  return [groupA, groupB];
+
+  cut = generateMeshForCut(group.xMin, group.xMax, group.yMin, group.yMax, group.zMin, group.zMax, splitInfo.splitDimension, medianValue);
+  return {
+    groups:[groupA, groupB],
+    cut: cut
+  }
 };
 
 function determineGroupToSplit(groups) {
   groupStats = _.map(groups, function(group, index){
-    var reds = _.map(group, function(point){ return point.red; });
-    var blues = _.map(group, function(point){ return point.blue; });
-    var greens = _.map(group, function(point){ return point.green; });
+    var reds = _.map(group.points, function(point){ return point.red; });
+    var blues = _.map(group.points, function(point){ return point.blue; });
+    var greens = _.map(group.points, function(point){ return point.green; });
 
     var stats = [];
     stats.push({
       groupIndex: index,
       group: groups[index],
       name: "red",
+      splitDimension: "x",
       index: 0,
       range: _.max(reds) - _.min(reds)
     });
@@ -667,6 +736,7 @@ function determineGroupToSplit(groups) {
       groupIndex: index,
       group: groups[index],
       name: "green",
+      splitDimension: "y",
       index: 1,
       range: _.max(greens) - _.min(greens)
     });
@@ -674,6 +744,7 @@ function determineGroupToSplit(groups) {
       groupIndex: index,
       group: groups[index],
       name: "blue",
+      splitDimension: "z",
       index: 2,
       range: _.max(blues) - _.min(blues)
     });
