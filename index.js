@@ -536,5 +536,13 @@ function determineGroupToSplit(groups) {
   return groupToSplit;
 };
 
+$(".plot-toggle-header").click(function() {
+  $header = $(this);
+  //getting the next element
+  $content = $header.next();
+  //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
+  $content.slideToggle(300, function () {});
+});
+
 document.getElementById('file').addEventListener('change', handleFileSelect, false);
 

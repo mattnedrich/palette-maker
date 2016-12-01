@@ -51,7 +51,12 @@
                             </div>
                         </div>
                         <div id="histogram-output">
-                            <div id="histogram-plot" class="cluster-plot"></div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading plot-toggle-header">Histogram Pixel Bucketing Graph</div>
+                                <div class="panel-body">
+                                    <div id="histogram-plot" class="cluster-plot"></div>
+                                </div>
+                            </div>
                             <div id="histogram-palette"></div>
                         </div>
                     </div>
@@ -70,7 +75,12 @@
                             <button type="button" class="btn btn-primary" onclick="runMedianCut()">Run Median Cut</button>
                         </div>
                         <div id="median-cut-output">
-                            <div id="median-cut-plot" class="cluster-plot"></div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading plot-toggle-header">Median Cut Pixel Grouping</div>
+                                <div class="panel-body">
+                                    <div id="median-cut-plot" class="cluster-plot"></div>
+                                </div>
+                            </div>
                             <div id="median-cut-palette"></div>
                         </div>
                     </div>
@@ -89,7 +99,12 @@
                             <button type="button" class="btn btn-primary" onclick="runKMeans()">Run KMeans</button>
                         </div>
                         <div id="kmeans-output">
-                            <div id="kmeans-plot" class="cluster-plot"></div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading plot-toggle-header">K-Means Pixel Clustering</div>
+                                <div class="panel-body">
+                                    <div id="kmeans-plot" class="cluster-plot"></div>
+                                </div>
+                            </div>
                             <div id="kmeans-palette"></div>
                         </div>
                     </div>

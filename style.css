@@ -63,14 +63,17 @@
 
 #histogram-output {
     display: none;
+    padding-top: 25px;
 }
 
 #median-cut-output {
     display: none;
+    padding-top: 25px;
 }
 
 #kmeans-output {
     display: none;
+    padding-top: 25px;
 }
 
 #histogram-plot {
@@ -104,10 +107,14 @@
 }
 
 .algorithm-output {
-    height: 500px;
+    height: 800px;
 }
 
 .algorithm-description {
     margin-top: 15px;
     margin-bottom: 15px;
+}
+
+.plot-toggle-header:hover {
+    cursor: pointer;
 }
