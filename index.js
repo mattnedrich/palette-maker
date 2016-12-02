@@ -129,6 +129,27 @@ function runKMeans(){
 // =========================== Pixel Helper Functions =====================================
 // ========================================================================================
 
+function rgbToHsl(r, g, b){
+  r /= 255, g /= 255, b /= 255;
+  var max = Math.max(r, g, b), min = Math.min(r, g, b);
+  var h, s, l = (max + min) / 2;
+
+  if(max == min){
+    h = s = 0; // achromatic
+  }else{
+    var d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch(max){
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return [h, s, l];
+}
+
 function getKeyForPixel(pixel, bucketsPerDimension) {
   var bucketSize = 256 / bucketsPerDimension;
   var redBucket = Math.floor(pixel.red / bucketSize);
@@ -192,8 +213,9 @@ function drawPaletteTable(containerId, pixelGroups) {
 
   pixelGroups = _.sortBy(pixelGroups, function(pg) {
     var averageColor = computeAverageColor(pg);
-    var luminance = getPixelLuminance(averageColor);
-    return luminance;
+    var hsl = rgbToHsl(averageColor.red, averageColor.green, averageColor.blue);
+    /* var luminance = getPixelLuminance(averageColor);*/
+    return hsl[0];
   }).reverse();
 
   _.each(pixelGroups, function(group) {
@@ -236,7 +258,8 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
     var key = getKeyForPixel(p, bucketsPerDimension);
     var pixelsInBucket = bucketMap[key];
     var averageColor = computeAverageColor(pixelsInBucket);
-    return "rgb(" + averageColor.red + "," + averageColor.green + "," + averageColor.blue + ")";
+    console.log("avg color: " + pixelToString(averageColor));
+    return "rgb(" + parseInt(averageColor.red) + "," + parseInt(averageColor.green) + "," + parseInt(averageColor.blue) + ")";
   });
 
   var data = {
@@ -330,9 +353,9 @@ function computeMeshesForHist(bucketsPerDimension){
   _.times(numPlanes, function(){
     planes.push(
       [{z: currentHeight, y: 0, x: 0},
-       {z: currentHeight, y: 255, x: 0},
-       {z: currentHeight, y: 255, x: 255},
-       {z: currentHeight, y: 0, x: 255}]
+       {z: currentHeight+0.1, y: 255, x: 0},
+       {z: currentHeight+0.2, y: 255, x: 255},
+       {z: currentHeight+0.3, y: 0, x: 255}]
     );
     currentHeight += bucketSize;
   });
