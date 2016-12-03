@@ -662,8 +662,9 @@ function generateMeshForCut(xMin, xMax, yMin, yMax, zMin, zMax, dimensionToCut, 
 }
 
 function medianCut(pointGroups, cuts, currentIteration, maxIterations){
-  console.log("running medianCut with " + pointGroups.length + " groups");
-  if (currentIteration > maxIterations) {
+  /* console.log("running medianCut with " + pointGroups.length + " groups");*/
+  console.log("running medianCut iteration: " + currentIteration + " of " + maxIterations);
+  if (currentIteration >= maxIterations) {
     return {
       groups: pointGroups,
       cuts: cuts
