@@ -54,7 +54,7 @@ class MedianCutPlotter {
       };
     });
 
-    _.each(meshes, function(mesh) {
+    _.each(meshes, (mesh) => {
       data.push(mesh);
     });
 

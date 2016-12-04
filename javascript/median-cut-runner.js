@@ -54,7 +54,7 @@ class MedianCutRunner {
         index: 2,
         range: _.max(blues) - _.min(blues),
         variance: _.chain(blues)
-                   .map(function(blue) {
+                   .map( (blue) => {
                      return (blue - avgBlue) * (blue - avgBlue);
                    })
                    .sum()
@@ -174,7 +174,7 @@ class MedianCutRunner {
     cuts.push(cut);
 
     _.pullAt(pointGroups, groupToSplitInfo.groupIndex);
-    _.each(splitGroups, function(g) {
+    _.each(splitGroups, (g) => {
       pointGroups.push(g);
     });
 
