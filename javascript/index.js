@@ -1,5 +1,7 @@
 
 const ImageUtil = require("./image-util.js");
+const HistogramPaletteBuilder = require("./histogram-palette-builder.js");
+const HistogramPalettePlotter = require("./histogram-palette-plotter.js");
 const $ = require("jquery");
 
 // Check for the various File API support.
@@ -109,8 +111,17 @@ function runHistogram() {
   removePaletteTable("#histogram-palette");
   $("#histogram-output").hide();
   var histogramInputValue = parseInt($("#histogram-input").val());
-  console.log("running histogram with grid size of " + histogramInputValue);
-  histogramAndPlot(pixels, histogramInputValue);
+
+  let histogramPaletteBuilder = new HistogramPaletteBuilder();
+  bucketedPixelInfos = histogramPaletteBuilder.binPixels(pixels, histogramInputValue);
+
+  let histogramPalettePlotter = new HistogramPalettePlotter();
+  histogramPalettePlotter.plot("histogram-plot", pixels, bucketedPixelInfos.buckets, bucketedPixelInfos.colors, histogramInputValue);
+
+  var bucketsInPalette = _.take(bucketedPixelInfos.buckets, 10);
+  drawPaletteTable("#histogram-palette", bucketsInPalette);
+
+  $("#histogram-output").show();
 }
 
 function runMedianCut() {
@@ -149,13 +160,13 @@ function drawPaletteTable(containerId, pixelGroups) {
                      .value();
 
   pixelGroups = _.sortBy(pixelGroups, function(pg) {
-    var averageColor = computeAverageColor(pg);
+    var averageColor = ImageUtil.computeAverageColor(pg);
     var hsl = ImageUtil.rgbToHsl(averageColor.red, averageColor.green, averageColor.blue);
     return hsl[0];
   }).reverse();
 
   _.each(pixelGroups, function(group) {
-    var averageColor = computeAverageColor(group);
+    var averageColor = ImageUtil.computeAverageColor(group);
     var percent = group.length / totalPixels;
     paletteTableString += "<tr>";
     paletteTableString += "<td>";
@@ -171,142 +182,6 @@ function drawPaletteTable(containerId, pixelGroups) {
   });
   $(containerId).append("<table class=\"table\">" + paletteTableString + "</table");
   $(containerId).show();
-}
-
-function histogramAndPlot(pixels, bucketsPerDimension) {
-  var bucketMap = {};
-  _.each(pixels, function(pixel){
-    var key = ImageUtil.getKeyForPixel(pixel, bucketsPerDimension);
-    if(key in bucketMap) {
-      bucketMap[key].push(pixel);
-    } else {
-      bucketMap[key] = [pixel];
-      console.log("adding bucket: " + key + "for pixel " + ImageUtil.pixelToString(pixel));
-    }
-  });
-
-  // find the top N buckets
-  var buckets = _.values(bucketMap);
-  var sortedBuckets = _.sortBy(buckets, function(bucket) {return bucket.length; }).reverse();
-
-  // plot code
-  var colors = _.map(pixels, function(p, index){
-    var key = ImageUtil.getKeyForPixel(p, bucketsPerDimension);
-    var pixelsInBucket = bucketMap[key];
-    var averageColor = computeAverageColor(pixelsInBucket);
-    console.log("avg color: " + ImageUtil.pixelToString(averageColor));
-    return "rgb(" + parseInt(averageColor.red) + "," + parseInt(averageColor.green) + "," + parseInt(averageColor.blue) + ")";
-  });
-
-  var data = {
-    x: _.map(pixels, function(p){ return p.red; }),
-    y: _.map(pixels, function(p){ return p.green; }),
-    z: _.map(pixels, function(p){ return p.blue; }),
-    mode: 'markers',
-    marker: {
-      size: 3,
-      color: colors,
-      line: {
-        color: 'rgb(100,100,100)',
-        width: 1
-      }
-    },
-    name: "points",
-    type: 'scatter3d'
-  };
-
-  var planes = computeMeshesForHist(bucketsPerDimension);
-  var meshes = _.map(planes, function(plane) {
-    var allX = _.map(plane, function(point) {
-      return point.x;
-    });
-    var allY = _.map(plane, function(point) {
-      return point.y;
-    });
-    var allZ = _.map(plane, function(point) {
-      return point.z;
-    });
-    return {
-      opacity:0.175,
-      color:'rgb(100,100,100)',
-      type: 'mesh3d',
-      x: allX,
-      y: allY,
-      z: allZ,
-      name: "grid"
-    };
-  });
-
-  var allItemsToPlot = meshes;
-  allItemsToPlot.push(data);
-  /* var testMesh = {
-   *   opacity:0.2,
-   *   color:'rgb(100,100,100)',
-   *   type: 'mesh3d',
-   *   x: [0,255,255,0],
-   *   y: [0,0,255,255],
-   *   z: [100,100,100,100]
-   * };
-   */
-  var layout = {
-    legend: {
-      type: "grid",
-    },
-    margin: { l:0, r:0, b: 0, t: 0 },
-    scene: {
-      xaxis: { title: "Red" },
-      yaxis: { title: "Green"},
-      zaxis: { title: "Blue"}
-    }
-  };
-
-  Plotly.newPlot('histogram-plot', allItemsToPlot, layout);
-
-  var bucketsInPalette = _.take(sortedBuckets, 10);
-  drawPaletteTable("#histogram-palette", bucketsInPalette);
-
-  $("#histogram-output").show();
-}
-
-function computeMeshesForHist(bucketsPerDimension){
-  var bucketSize = (255 / bucketsPerDimension);
-  var numPlanes = bucketsPerDimension - 1;
-  var planes = []
-
-  // small offsets are used to get around plotting limitations
-  var currentHeight = bucketSize;
-  _.times(numPlanes, function(){
-    planes.push(
-      [{x: currentHeight, y: 0, z: 0},
-       {x: currentHeight+0.1, y: 255, z: 0},
-       {x: currentHeight+0.2, y: 255, z: 255},
-       {x: currentHeight+0.3, y: 0, z: 255}]
-    );
-    currentHeight += bucketSize;
-  });
-
-  currentHeight = bucketSize;
-  _.times(numPlanes, function(){
-    planes.push(
-      [{z: currentHeight, y: 0, x: 0},
-       {z: currentHeight+0.1, y: 255, x: 0},
-       {z: currentHeight+0.2, y: 255, x: 255},
-       {z: currentHeight+0.3, y: 0, x: 255}]
-    );
-    currentHeight += bucketSize;
-  });
-
-  currentHeight = bucketSize;
-  _.times(numPlanes, function(){
-    planes.push(
-      [{y: currentHeight, x: 0, z: 0},
-       {y: currentHeight+0.1, x: 255, z: 0},
-       {y: currentHeight+0.2, x: 255, z: 255},
-       {y: currentHeight+0.3, x: 0, z: 255}]
-    );
-    currentHeight += bucketSize;
-  });
-  return planes;
 }
 
 function plotOriginalData(pixels) {
@@ -367,7 +242,7 @@ function medianCutAndPlot(pixels, partitions) {
   /* plotClusters(groups, "median-cut-plot");
    */
   var data = _.map(groups, function(group){
-    var avgColor = computeAverageColor(group);
+    var avgColor = ImageUtil.computeAverageColor(group);
     var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
     return {
       x: _.map(group, function(p){ return p.red; }),
@@ -470,7 +345,7 @@ function kMeans(pixels, k) {
 
 function computeMeans(groups) {
   return _.map(groups, function(group) {
-    var averageColor = computeAverageColor(group);
+    var averageColor = ImageUtil.computeAverageColor(group);
     return [averageColor.red, averageColor.green, averageColor.blue];
   });
 }
@@ -519,29 +394,29 @@ function distance(pointA, pointB) {
 // ================== KMeans End =========================
 // =======================================================
 
-function computeAverageColor(points){
-  var totalRed = _.chain(points)
-        .map(function(p){ return p.red; })
-        .sum()
-        .value();
-  var totalGreen = _.chain(points)
-        .map(function(p){ return p.green; })
-        .sum()
-        .value();
-  var totalBlue = _.chain(points)
-        .map(function(p){ return p.blue; })
-        .sum()
-        .value();
-  return {
-    red: (totalRed / points.length),
-    green: (totalGreen / points.length),
-    blue: (totalBlue / points.length)
-  };
-}
-
+/* function computeAverageColor(points){
+ *   var totalRed = _.chain(points)
+ *         .map(function(p){ return p.red; })
+ *         .sum()
+ *         .value();
+ *   var totalGreen = _.chain(points)
+ *         .map(function(p){ return p.green; })
+ *         .sum()
+ *         .value();
+ *   var totalBlue = _.chain(points)
+ *         .map(function(p){ return p.blue; })
+ *         .sum()
+ *         .value();
+ *   return {
+ *     red: (totalRed / points.length),
+ *     green: (totalGreen / points.length),
+ *     blue: (totalBlue / points.length)
+ *   };
+ * }
+ * */
 function plotClusters(pointGroups, elementId){
   var data = _.map(pointGroups, function(group){
-    var avgColor = computeAverageColor(group);
+    var avgColor = ImageUtil.computeAverageColor(group);
     var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
     return {
       x: _.map(group, function(p){ return p.red; }),

@@ -21,14 +21,6 @@ class ImageUtil {
     return [h, s, l];
   }
 
-  static getKeyForPixel(pixel, bucketsPerDimension) {
-    var bucketSize = 256 / bucketsPerDimension;
-    var redBucket = Math.floor(pixel.red / bucketSize);
-    var greenBucket = Math.floor(pixel.green / bucketSize);
-    var blueBucket = Math.floor(pixel.blue / bucketSize);
-    var key = redBucket + ":" + greenBucket + ":" + blueBucket;
-    return key;
-  }
 
   static getPixelLuminance(pixel) {
     return (pixel.red * 0.2126) + (pixel.green * 0.7152) + (pixel.blue * 0.0722);
@@ -57,6 +49,26 @@ class ImageUtil {
   static getColorPreviewHtmlString(color) {
     var color = ImageUtil.pixelToHexString(color);
     return "<div class=\"colorPreview\" style=\"background:" + color + "\"></div>";
+  }
+
+  static computeAverageColor(pixels){
+    var totalRed = _.chain(pixels)
+                    .map(function(p){ return p.red; })
+                    .sum()
+                    .value();
+    var totalGreen = _.chain(pixels)
+                      .map(function(p){ return p.green; })
+                      .sum()
+                      .value();
+    var totalBlue = _.chain(pixels)
+                     .map(function(p){ return p.blue; })
+                     .sum()
+                     .value();
+    return {
+      red: (totalRed / pixels.length),
+      green: (totalGreen / pixels.length),
+      blue: (totalBlue / pixels.length)
+    };
   }
 
 }

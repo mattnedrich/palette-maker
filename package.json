@@ -16,6 +16,7 @@
   "homepage": "https://github.com/mattnedrich/palette-extractor#readme",
   "devDependencies": {
     "babel-loader": "^6.2.8",
+    "lodash": "^4.17.2",
     "webpack": "^1.13.3"
   },
   "dependencies": {
