@@ -7,7 +7,7 @@ class HistogramPalettePlotter {
 
     // small offsets are used to get around plotting limitations
     var currentHeight = bucketSize;
-    _.times(numPlanes, function(){
+    _.times(numPlanes, () => {
       planes.push(
         [{x: currentHeight, y: 0, z: 0},
          {x: currentHeight+0.1, y: 255, z: 0},
@@ -18,7 +18,7 @@ class HistogramPalettePlotter {
     });
 
     currentHeight = bucketSize;
-    _.times(numPlanes, function(){
+    _.times(numPlanes, () => {
       planes.push(
         [{z: currentHeight, y: 0, x: 0},
          {z: currentHeight+0.1, y: 255, x: 0},
@@ -29,7 +29,7 @@ class HistogramPalettePlotter {
     });
 
     currentHeight = bucketSize;
-    _.times(numPlanes, function(){
+    _.times(numPlanes, () => {
       planes.push(
         [{y: currentHeight, x: 0, z: 0},
          {y: currentHeight+0.1, x: 255, z: 0},
@@ -42,14 +42,14 @@ class HistogramPalettePlotter {
   }
 
   plot(elementId, pixels, buckets, bucketColors, bucketsPerDimension) {
-    let plotlyColors = _.map(bucketColors, function(averageColor){
+    let plotlyColors = _.map(bucketColors, (averageColor) => {
       return "rgb(" + parseInt(averageColor.red) + "," + parseInt(averageColor.green) + "," + parseInt(averageColor.blue) + ")";
     });
 
     let data = {
-      x: _.map(pixels, function(p){ return p.red; }),
-      y: _.map(pixels, function(p){ return p.green; }),
-      z: _.map(pixels, function(p){ return p.blue; }),
+      x: _.map(pixels, (p) => { return p.red; }),
+      y: _.map(pixels, (p) => { return p.green; }),
+      z: _.map(pixels, (p) => { return p.blue; }),
       mode: 'markers',
       marker: {
         size: 3,
@@ -64,14 +64,14 @@ class HistogramPalettePlotter {
     };
 
     let planes = this.computeMeshesForHist(bucketsPerDimension);
-    let meshes = _.map(planes, function(plane) {
-      var allX = _.map(plane, function(point) {
+    let meshes = _.map(planes, (plane) => {
+      var allX = _.map(plane, (point) => {
         return point.x;
       });
-      var allY = _.map(plane, function(point) {
+      var allY = _.map(plane, (point) => {
         return point.y;
       });
-      var allZ = _.map(plane, function(point) {
+      var allZ = _.map(plane, (point) => {
         return point.z;
       });
       return {
