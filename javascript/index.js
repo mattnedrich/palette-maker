@@ -5,6 +5,8 @@ const ImageUtil = require("./image-util.js");
 const PaletteTableWriter = require("./palette-table-writer.js");
 const HistogramPaletteBuilder = require("./histogram-palette-builder.js");
 const HistogramPalettePlotter = require("./histogram-palette-plotter.js");
+const MedianCutRunner = require("./median-cut-runner.js");
+const MedianCutPlotter = require("./median-cut-plotter.js");
 
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -131,7 +133,28 @@ function runMedianCut() {
   $("#median-cut-output").hide();
   var medianCutInputValue = parseInt($("#median-cut-input").val());
   console.log("running median cut with input " + medianCutInputValue);
-  medianCutAndPlot(pixels, medianCutInputValue);
+  /* medianCutAndPlot(pixels, medianCutInputValue);*/
+  var groupsWithInfo = {
+    points: pixels,
+    xMin: 0,
+    xMax: 255,
+    yMin: 0,
+    yMax: 255,
+    zMin: 0,
+    zMax: 255
+  };
+
+  let medianCutRunner = new MedianCutRunner();
+  let result = medianCutRunner.run([groupsWithInfo], [], 0, medianCutInputValue);
+  var groups = _.map(result.groups, function(g) {return g.points;});
+  var cuts = result.cuts;
+
+  let medianCutPlotter = new MedianCutPlotter();
+  medianCutPlotter.plot("median-cut-plot", groups, cuts);
+
+  PaletteTableWriter.drawPaletteTable("#median-cut-palette", groups);
+
+  $("#median-cut-output").show();
 }
 
 function runKMeans(){
@@ -181,86 +204,6 @@ function plotOriginalData(pixels) {
   Plotly.newPlot('input-image-plot', [data], layout);
   $("#input-image-plot").show();
   $(".input-image-panel").show();
-}
-
-function medianCutAndPlot(pixels, partitions) {
-  var groupsWithInfo = {
-    points: pixels,
-    xMin: 0,
-    xMax: 255,
-    yMin: 0,
-    yMax: 255,
-    zMin: 0,
-    zMax: 255
-  };
-
-  var result = medianCut([groupsWithInfo], [], 0, partitions);
-  var groups = _.map(result.groups, function(g) {return g.points;});
-  var cuts = result.cuts;
-
-  console.log("=======================");
-  _.each(groups, function(g){
-    console.log("Cluster: " + g.length + " points");
-  });
-  /* plotClusters(groups, "median-cut-plot");
-   */
-  var data = _.map(groups, function(group){
-    var avgColor = ImageUtil.computeAverageColor(group);
-    var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
-    return {
-      x: _.map(group, function(p){ return p.red; }),
-      y: _.map(group, function(p){ return p.green; }),
-      z: _.map(group, function(p){ return p.blue; }),
-      mode: 'markers',
-      marker: {
-        color: colorString,
-        size: 3,
-        line: {
-          color: 'rgb(100,100,100)',
-          width: 1
-        }
-      },
-      type: 'scatter3d'
-    };
-  });
-
-  var layout = {
-    margin: { l:0, r:0, b: 0, t: 0 },
-    scene: {
-      xaxis: { title: "Red" },
-      yaxis: { title: "Green"},
-      zaxis: { title: "Blue"}
-    }
-  };
-
-  var meshes = _.map(cuts, function(cut) {
-    var allX = _.map(cut, function(point) {
-      return point.x;
-    });
-    var allY = _.map(cut, function(point) {
-      return point.y;
-    });
-    var allZ = _.map(cut, function(point) {
-      return point.z;
-    });
-    return {
-      opacity:0.175,
-      color:'rgb(100,100,100)',
-      type: 'mesh3d',
-      x: allX,
-      y: allY,
-      z: allZ,
-      name: "grid"
-    };
-  });
-
-  _.each(meshes, function(mesh) {
-    data.push(mesh);
-  });
-
-  Plotly.newPlot("median-cut-plot", data, layout);
-  PaletteTableWriter.drawPaletteTable("#median-cut-palette", groups);
-  $("#median-cut-output").show();
 }
 
 // =======================================================
@@ -357,26 +300,6 @@ function distance(pointA, pointB) {
 // ================== KMeans End =========================
 // =======================================================
 
-/* function computeAverageColor(points){
- *   var totalRed = _.chain(points)
- *         .map(function(p){ return p.red; })
- *         .sum()
- *         .value();
- *   var totalGreen = _.chain(points)
- *         .map(function(p){ return p.green; })
- *         .sum()
- *         .value();
- *   var totalBlue = _.chain(points)
- *         .map(function(p){ return p.blue; })
- *         .sum()
- *         .value();
- *   return {
- *     red: (totalRed / points.length),
- *     green: (totalGreen / points.length),
- *     blue: (totalBlue / points.length)
- *   };
- * }
- * */
 function plotClusters(pointGroups, elementId){
   var data = _.map(pointGroups, function(group){
     var avgColor = ImageUtil.computeAverageColor(group);
@@ -410,175 +333,9 @@ function plotClusters(pointGroups, elementId){
   Plotly.newPlot(elementId, data, layout);
 }
 
-function generateMeshForCut(xMin, xMax, yMin, yMax, zMin, zMax, dimensionToCut, cutLocation) {
-  if (dimensionToCut === "x") {
-    return [
-      {x: cutLocation, y: yMin, z: zMin},
-      {x: cutLocation+0.1, y: yMax, z: zMin},
-      {x: cutLocation+0.2, y: yMax, z: zMax},
-      {x: cutLocation+0.3, y: yMin, z: zMax}
-    ];
-  } else if (dimensionToCut === "y") {
-    return [
-      {x: xMin, y: cutLocation, z: zMin},
-      {x: xMax, y: cutLocation+0.1, z: zMin},
-      {x: xMax, y: cutLocation+0.2, z: zMax},
-      {x: xMin, y: cutLocation+0.3, z: zMax}
-    ];
-  } else if (dimensionToCut === "z") {
-    return [
-      {x: xMin, y: yMin, z: cutLocation},
-      {x: xMax, y: yMin, z: cutLocation+0.1},
-      {x: xMax, y: yMax, z: cutLocation+0.2},
-      {x: xMin, y: yMax, z: cutLocation+0.3}
-    ];
-  }
-}
 
-function medianCut(pointGroups, cuts, currentIteration, maxIterations){
-  /* console.log("running medianCut with " + pointGroups.length + " groups");*/
-  console.log("running medianCut iteration: " + currentIteration + " of " + maxIterations);
-  if (currentIteration >= maxIterations) {
-    return {
-      groups: pointGroups,
-      cuts: cuts
-    };
-  }
 
-  // determine which group has the most variation in some dimension
-  var groupToSplitInfo = determineGroupToSplit(pointGroups);
 
-  console.log("will split based on " + groupToSplitInfo.name);
-  result= splitGroup(groupToSplitInfo.group, groupToSplitInfo);
-  var splitGroups = result.groups;
-  var cut = result.cut;
-  cuts.push(cut);
-
-  _.pullAt(pointGroups, groupToSplitInfo.groupIndex);
-  _.each(splitGroups, function(g) {
-    pointGroups.push(g);
-  });
-
-  return medianCut(pointGroups, cuts, currentIteration + 1, maxIterations);
-};
-
-function splitGroup(group, splitInfo) {
-  var sortedPoints = _.sortBy(group.points, function(p){
-    return p[splitInfo.name];
-  });
-  var medianIndex = parseInt(sortedPoints.length / 2);
-  var medianValue = sortedPoints[medianIndex][splitInfo.name];
-
-  var groupA = {
-    points: [],
-    xMin: group.xMin,
-    xMax: group.xMax,
-    yMin: group.yMin,
-    yMax: group.yMax,
-    zMin: group.zMin,
-    zMax: group.zMax
-  };
-  var groupB = {
-    points: [],
-    xMin: group.xMin,
-    xMax: group.xMax,
-    yMin: group.yMin,
-    yMax: group.yMax,
-    zMin: group.zMin,
-    zMax: group.zMax
-  };
-
-  var cut = null
-  if(splitInfo.splitDimension === "x"){
-    groupA.xMax = medianValue;
-    groupB.xMin = medianValue;
-  } else if (splitInfo.splitDimension === "y") {
-    groupB.yMin = medianValue;
-    groupA.yMax = medianValue;
-  } else if (splitInfo.splitDimension === "z") {
-    groupB.zMin = medianValue;
-    groupA.zMax = medianValue;
-  }
-
-  _.each(group.points, function(p){
-    if (p[splitInfo.name] > medianValue){
-      groupB.points.push(p);
-    } else {
-      groupA.points.push(p);
-    }
-  });
-
-  cut = generateMeshForCut(group.xMin, group.xMax, group.yMin, group.yMax, group.zMin, group.zMax, splitInfo.splitDimension, medianValue);
-  return {
-    groups:[groupA, groupB],
-    cut: cut
-  }
-};
-
-function determineGroupToSplit(groups) {
-  groupStats = _.map(groups, function(group, index){
-    var reds = _.map(group.points, function(point){ return point.red; });
-    var greens = _.map(group.points, function(point){ return point.green; });
-    var blues = _.map(group.points, function(point){ return point.blue; });
-
-    var sumRed = _.sum(reds);
-    var sumGreen = _.sum(greens);
-    var sumBlue = _.sum(blues);
-
-    var avgRed = sumRed / reds.length;
-    var avgGreen = sumGreen / greens.length;
-    var avgBlue = sumBlue / blues.length;
-
-    var stats = [];
-    stats.push({
-      groupIndex: index,
-      group: groups[index],
-      name: "red",
-      splitDimension: "x",
-      index: 0,
-      range: _.max(reds) - _.min(reds),
-      variance: _.chain(reds)
-                 .map(function(red) {
-                   return (red - avgRed) * (red - avgRed);
-                 })
-                 .sum()
-                 .value()
-    });
-    stats.push({
-      groupIndex: index,
-      group: groups[index],
-      name: "green",
-      splitDimension: "y",
-      index: 1,
-      range: _.max(greens) - _.min(greens),
-      variance: _.chain(greens)
-                 .map(function(green) {
-                   return (green - avgGreen) * (green - avgGreen);
-                 })
-                 .sum()
-                 .value()
-    });
-    stats.push({
-      groupIndex: index,
-      group: groups[index],
-      name: "blue",
-      splitDimension: "z",
-      index: 2,
-      range: _.max(blues) - _.min(blues),
-      variance: _.chain(blues)
-                 .map(function(blue) {
-                   return (blue - avgBlue) * (blue - avgBlue);
-                 })
-                 .sum()
-                 .value()
-    });
-
-    return _.last(_.sortBy(stats, 'range'));
-  });
-
-  var groupToSplit = _.last(_.sortBy(groupStats, 'range'));
-  return groupToSplit;
-};
 
 $(".plot-toggle-header").click(function() {
   $header = $(this);
