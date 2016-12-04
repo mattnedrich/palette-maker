@@ -1,8 +1,10 @@
 
+const $ = require("jquery");
+
 const ImageUtil = require("./image-util.js");
+const PaletteTableWriter = require("./palette-table-writer.js");
 const HistogramPaletteBuilder = require("./histogram-palette-builder.js");
 const HistogramPalettePlotter = require("./histogram-palette-plotter.js");
-const $ = require("jquery");
 
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -119,7 +121,7 @@ function runHistogram() {
   histogramPalettePlotter.plot("histogram-plot", pixels, bucketedPixelInfos.buckets, bucketedPixelInfos.colors, histogramInputValue);
 
   var bucketsInPalette = _.take(bucketedPixelInfos.buckets, 10);
-  drawPaletteTable("#histogram-palette", bucketsInPalette);
+  PaletteTableWriter.drawPaletteTable("#histogram-palette", bucketsInPalette);
 
   $("#histogram-output").show();
 }
@@ -144,45 +146,6 @@ function removePaletteTable(containerId) {
   $(containerId).empty();
 }
 
-function drawPaletteTable(containerId, pixelGroups) {
-  var paletteTableString = "";
-
-  // Table Header
-  paletteTableString += "<tr>";
-  paletteTableString += "<th>Color Code</th>";
-  paletteTableString += "<th>Color</th>";
-  paletteTableString += "<th>Percent</th>";
-  paletteTableString += "</tr>";
-
-  var totalPixels = _.chain(pixelGroups)
-                     .map(function(b) {return b.length;})
-                     .sum()
-                     .value();
-
-  pixelGroups = _.sortBy(pixelGroups, function(pg) {
-    var averageColor = ImageUtil.computeAverageColor(pg);
-    var hsl = ImageUtil.rgbToHsl(averageColor.red, averageColor.green, averageColor.blue);
-    return hsl[0];
-  }).reverse();
-
-  _.each(pixelGroups, function(group) {
-    var averageColor = ImageUtil.computeAverageColor(group);
-    var percent = group.length / totalPixels;
-    paletteTableString += "<tr>";
-    paletteTableString += "<td>";
-    paletteTableString += ImageUtil.pixelToHexString(averageColor);
-    paletteTableString += "</td>";
-    paletteTableString += "<td>";
-    paletteTableString += ImageUtil.getColorPreviewHtmlString(averageColor);
-    paletteTableString += "</td>";
-    paletteTableString += "<td>";
-    paletteTableString += (percent * 100).toFixed(2);
-    paletteTableString += "</td>";
-    paletteTableString += "</tr>";
-  });
-  $(containerId).append("<table class=\"table\">" + paletteTableString + "</table");
-  $(containerId).show();
-}
 
 function plotOriginalData(pixels) {
   console.log("will plot " + pixels.length + " pixels");
@@ -296,7 +259,7 @@ function medianCutAndPlot(pixels, partitions) {
   });
 
   Plotly.newPlot("median-cut-plot", data, layout);
-  drawPaletteTable("#median-cut-palette", groups);
+  PaletteTableWriter.drawPaletteTable("#median-cut-palette", groups);
   $("#median-cut-output").show();
 }
 
@@ -316,7 +279,7 @@ function kMeansAndPlot(pixels, k, numRuns) {
     }
   }
   plotClusters(bestResult, "kmeans-plot");
-  drawPaletteTable("#kmeans-palette", bestResult);
+  PaletteTableWriter.drawPaletteTable("#kmeans-palette", bestResult);
   $("#kmeans-output").show();
 }
 
