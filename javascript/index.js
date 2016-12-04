@@ -1,4 +1,7 @@
 
+const ImageUtil = require("./image-util.js");
+const $ = require("jquery");
+
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
 } else {
@@ -125,72 +128,6 @@ function runKMeans(){
   console.log("running kmeans with input " + kMeansInputValue);
   kMeansAndPlot(pixels, kMeansInputValue, 100);
 }
-// ========================================================================================
-// =========================== Pixel Helper Functions =====================================
-// ========================================================================================
-
-function rgbToHsl(r, g, b){
-  r /= 255, g /= 255, b /= 255;
-  var max = Math.max(r, g, b), min = Math.min(r, g, b);
-  var h, s, l = (max + min) / 2;
-
-  if(max == min){
-    h = s = 0; // achromatic
-  }else{
-    var d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch(max){
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-
-  return [h, s, l];
-}
-
-function getKeyForPixel(pixel, bucketsPerDimension) {
-  var bucketSize = 256 / bucketsPerDimension;
-  var redBucket = Math.floor(pixel.red / bucketSize);
-  var greenBucket = Math.floor(pixel.green / bucketSize);
-  var blueBucket = Math.floor(pixel.blue / bucketSize);
-  var key = redBucket + ":" + greenBucket + ":" + blueBucket;
-  return key;
-}
-
-function getPixelLuminance(pixel) {
-  return (pixel.red * 0.2126) + (pixel.green * 0.7152) + (pixel.blue * 0.0722);
-}
-
-function pixelToString(pixel) {
-  return "r: " + pixel.red + ", g: " + pixel.green + ", b: " + pixel.blue;
-}
-
-function numberToPaddedHexString(number) {
-  var hexString = parseInt(number).toString(16);
-  if(hexString.length == 1) {
-    return "0" + hexString;
-  }
-  return hexString
-}
-
-function pixelToHexString(pixel) {
-  var hexString = "#" +
-                  numberToPaddedHexString(pixel.red) +
-                  numberToPaddedHexString(pixel.green) +
-                  numberToPaddedHexString(pixel.blue);
-  return hexString;
-}
-
-function getColorPreviewHtmlString(color) {
-  var color = pixelToHexString(color);
-  return "<div class=\"colorPreview\" style=\"background:" + color + "\"></div>";
-}
-
-// ========================================================================================
-// ========================================================================================
-// ========================================================================================
 
 function removePaletteTable(containerId) {
   $(containerId).empty();
@@ -213,8 +150,7 @@ function drawPaletteTable(containerId, pixelGroups) {
 
   pixelGroups = _.sortBy(pixelGroups, function(pg) {
     var averageColor = computeAverageColor(pg);
-    var hsl = rgbToHsl(averageColor.red, averageColor.green, averageColor.blue);
-    /* var luminance = getPixelLuminance(averageColor);*/
+    var hsl = ImageUtil.rgbToHsl(averageColor.red, averageColor.green, averageColor.blue);
     return hsl[0];
   }).reverse();
 
@@ -223,10 +159,10 @@ function drawPaletteTable(containerId, pixelGroups) {
     var percent = group.length / totalPixels;
     paletteTableString += "<tr>";
     paletteTableString += "<td>";
-    paletteTableString += pixelToHexString(averageColor);
+    paletteTableString += ImageUtil.pixelToHexString(averageColor);
     paletteTableString += "</td>";
     paletteTableString += "<td>";
-    paletteTableString += getColorPreviewHtmlString(averageColor);
+    paletteTableString += ImageUtil.getColorPreviewHtmlString(averageColor);
     paletteTableString += "</td>";
     paletteTableString += "<td>";
     paletteTableString += (percent * 100).toFixed(2);
@@ -240,12 +176,12 @@ function drawPaletteTable(containerId, pixelGroups) {
 function histogramAndPlot(pixels, bucketsPerDimension) {
   var bucketMap = {};
   _.each(pixels, function(pixel){
-    var key = getKeyForPixel(pixel, bucketsPerDimension);
+    var key = ImageUtil.getKeyForPixel(pixel, bucketsPerDimension);
     if(key in bucketMap) {
       bucketMap[key].push(pixel);
     } else {
       bucketMap[key] = [pixel];
-      console.log("adding bucket: " + key + "for pixel " + pixelToString(pixel));
+      console.log("adding bucket: " + key + "for pixel " + ImageUtil.pixelToString(pixel));
     }
   });
 
@@ -255,10 +191,10 @@ function histogramAndPlot(pixels, bucketsPerDimension) {
 
   // plot code
   var colors = _.map(pixels, function(p, index){
-    var key = getKeyForPixel(p, bucketsPerDimension);
+    var key = ImageUtil.getKeyForPixel(p, bucketsPerDimension);
     var pixelsInBucket = bucketMap[key];
     var averageColor = computeAverageColor(pixelsInBucket);
-    console.log("avg color: " + pixelToString(averageColor));
+    console.log("avg color: " + ImageUtil.pixelToString(averageColor));
     return "rgb(" + parseInt(averageColor.red) + "," + parseInt(averageColor.green) + "," + parseInt(averageColor.blue) + ")";
   });
 
@@ -814,5 +750,11 @@ $(".plot-toggle-header").click(function() {
   $content.slideToggle(300, function () {});
 });
 
-document.getElementById('file').addEventListener('change', handleFileSelect, false);
 
+$(document).ready(function() {
+  document.getElementById('file').addEventListener('change', handleFileSelect, false);
+
+  $("#run-histogram").click(runHistogram);
+  $("#run-median-cut").click(runMedianCut);
+  $("#run-kmeans").click(runKMeans);
+});
