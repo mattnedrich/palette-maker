@@ -2,6 +2,27 @@
 
 Palette Extractor is an interactive web tool that allows you to explore different approaches to extract color palettes from images.
 
+# Development
+To run the project:
+
+1. Clone the repository,
+
+2. Install the dependencies by running:
+
+```
+npm install
+```
+
+3. Build and package the javascript by running:
+
+The javascript can be built by running: 
+
+```
+webpack
+```
+
+This will generate a single `bundle.js` file, containing all of the code.
+
 # Features 
 When the app starts, you simply browse and select a local image. The app then loads the image and plots in in three dimensional RGB space.
 
@@ -36,17 +57,3 @@ Since k-means is notorious for getting stuck in local minima, the algorithm is r
 <img src="https://cloud.githubusercontent.com/assets/4796480/20862229/395f0728-b973-11e6-982b-e99b2c211b10.jpg" width="400">
 </div>
 
-# Development
-To run the project, clone the repository, then run
-
-```
-npm install
-```
-
-The javascript can be built via
-
-```
-webpack
-```
-
-This will generate a single `bundle.js` file, containing all of the javascript.
