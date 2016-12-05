@@ -23,6 +23,20 @@ webpack
 
 This will generate a single `bundle.js` file, containing all of the code.
 
+# Running the App
+After building the `bundle.js` file, the app can be run a few different ways.
+
+### Using http-server
+Since the app runs entirely inside of the browser, you can use [http-server](https://www.npmjs.com/package/http-server) to serve up the files locally.
+```
+npm install http-server -g
+```
+
+Then, navigate to the project root and run:
+```
+http-server . 
+```
+
 # Features 
 When the app starts, you simply browse and select a local image. The app then loads the image and plots in in three dimensional RGB space.
 
