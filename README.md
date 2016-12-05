@@ -29,7 +29,7 @@ The histogram binning approach partitions the RGB space into a NxNxN grid where 
 ### K-Means Clustering
 [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) attempts to cluster the pixels into k distinct clusters. The user provides a k value as input.
 
-Since k-means is notorious for getting stuck in local minima, the algorithm is re-run 100 times and the result with lowest error is selected. An example output from running k-means on the above image is shown below.
+Since k-means is notorious for getting stuck in local minima, the algorithm is re-run 10 times and the result with lowest error is selected. An example output from running k-means on the above image is shown below.
 
 <div>
 <img src="https://cloud.githubusercontent.com/assets/4796480/20862226/29f32ab2-b973-11e6-9690-51d714f7847e.png" width="460">

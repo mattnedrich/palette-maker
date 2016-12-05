@@ -8,6 +8,7 @@ const HistogramPalettePlotter = require("./histogram-palette-plotter.js");
 const MedianCutRunner = require("./median-cut-runner.js");
 const MedianCutPlotter = require("./median-cut-plotter.js");
 const KMeansRunner = require("./kmeans-runner.js");
+const KMeansPlotter = require("./kmeans-plotter.js");
 
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -134,7 +135,7 @@ function runMedianCut() {
   $("#median-cut-output").hide();
   var medianCutInputValue = parseInt($("#median-cut-input").val());
   console.log("running median cut with input " + medianCutInputValue);
-  /* medianCutAndPlot(pixels, medianCutInputValue);*/
+
   var groupsWithInfo = {
     points: pixels,
     xMin: 0,
@@ -163,7 +164,15 @@ function runKMeans(){
   $("#kmeans-output").hide();
   var kMeansInputValue = parseInt($("#kmeans-input").val());
   console.log("running kmeans with input " + kMeansInputValue);
-  kMeansAndPlot(pixels, kMeansInputValue, 100);
+
+  let kmeansRunner = new KMeansRunner();
+  let result = kmeansRunner.run(kMeansInputValue, pixels);
+
+  let kmeansPlotter = new KMeansPlotter();
+  kmeansPlotter.plot("kmeans-plot", result.clusters);
+  PaletteTableWriter.drawPaletteTable("#kmeans-palette", result.clusters);
+
+  $("#kmeans-output").show();
 }
 
 function removePaletteTable(containerId) {
@@ -206,52 +215,6 @@ function plotOriginalData(pixels) {
   $("#input-image-plot").show();
   $(".input-image-panel").show();
 }
-
-function kMeansAndPlot(pixels, k, numRuns) {
-  let kmeansRunner = new KMeansRunner();
-  let result = kmeansRunner.run(k, pixels);
-
-  plotClusters(result.clusters, "kmeans-plot");
-  PaletteTableWriter.drawPaletteTable("#kmeans-palette", result.clusters);
-  $("#kmeans-output").show();
-}
-
-function plotClusters(pointGroups, elementId){
-  var data = _.map(pointGroups, function(group){
-    var avgColor = ImageUtil.computeAverageColor(group);
-    var colorString = "rgb(" + parseInt(avgColor.red) + "," + parseInt(avgColor.green) + "," + parseInt(avgColor.blue) + ")";
-    return {
-      x: _.map(group, function(p){ return p.red; }),
-      y: _.map(group, function(p){ return p.green; }),
-      z: _.map(group, function(p){ return p.blue; }),
-      mode: 'markers',
-      marker: {
-        color: colorString,
-        size: 3,
-        line: {
-          color: 'rgb(100,100,100)',
-          width: 1
-        }
-      },
-      type: 'scatter3d'
-    };
-  });
-
-  var layout = {
-    margin: { l:0, r:0, b: 0, t: 0 },
-    scene: {
-      xaxis: { title: "Red" },
-      yaxis: { title: "Green"},
-      zaxis: { title: "Blue"}
-    }
-  };
-
-  Plotly.newPlot(elementId, data, layout);
-}
-
-
-
-
 
 $(".plot-toggle-header").click(function() {
   $header = $(this);
