@@ -5,18 +5,13 @@ Palette Extractor is an interactive web tool that allows you to explore differen
 # Development
 To run the project:
 
-1. Clone the repository,
+* Clone the repository
 
-2. Install the dependencies by running:
-
+* Install the dependencies by running:
 ```
 npm install
 ```
-
-3. Build and package the javascript by running:
-
-The javascript can be built by running: 
-
+* Build and package the javascript by running:
 ```
 webpack
 ```
