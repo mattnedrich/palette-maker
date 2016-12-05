@@ -3,6 +3,7 @@
 Palette Extractor is an interactive web tool that allows you to explore different approaches to extract color palettes from images.
 
 # Development
+## Setup
 To run the project:
 
 * Clone the repository
@@ -18,7 +19,7 @@ webpack
 
 This will generate a single `bundle.js` file, containing all of the code.
 
-# Running the App
+## Running Locally
 After building the `bundle.js` file, the app can be run a few different ways.
 
 ### Using http-server
