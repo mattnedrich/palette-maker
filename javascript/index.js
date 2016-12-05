@@ -7,6 +7,7 @@ const HistogramPaletteBuilder = require("./histogram-palette-builder.js");
 const HistogramPalettePlotter = require("./histogram-palette-plotter.js");
 const MedianCutRunner = require("./median-cut-runner.js");
 const MedianCutPlotter = require("./median-cut-plotter.js");
+const KMeansRunner = require("./kmeans-runner.js");
 
 // Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -206,99 +207,14 @@ function plotOriginalData(pixels) {
   $(".input-image-panel").show();
 }
 
-// =======================================================
-// ================== KMeans Start =======================
-// =======================================================
-
 function kMeansAndPlot(pixels, k, numRuns) {
-  var bestResult = null;
-  var bestError = Infinity;
+  let kmeansRunner = new KMeansRunner();
+  let result = kmeansRunner.run(k, pixels);
 
-  for(var attempt=0; attempt<numRuns; attempt++) {
-    result = kMeans(pixels, k);
-    if(result.error < bestError) {
-      bestResult = result.groups;
-      bestError = result.error;
-    }
-  }
-  plotClusters(bestResult, "kmeans-plot");
-  PaletteTableWriter.drawPaletteTable("#kmeans-palette", bestResult);
+  plotClusters(result.clusters, "kmeans-plot");
+  PaletteTableWriter.drawPaletteTable("#kmeans-palette", result.clusters);
   $("#kmeans-output").show();
 }
-
-function kMeans(pixels, k) {
-  // randomly initialize means
-  var means = [];
-  for(m=0; m<k; m++){
-    var pixel = pixels[Math.floor(Math.random()*pixels.length)];
-    means.push(pixel);
-  }
-
-  var done = false;
-  var result = null;
-  while(!done) {
-    result = groupPointsByMeans(means, pixels);
-    newMeans = computeMeans(result.groups);
-    done = isDone(means, newMeans);
-  }
-
-  console.log("Finished KMeans, error is " + result.error);
-  return {
-    groups: result.groups,
-    error: result.error
-  };
-}
-
-function computeMeans(groups) {
-  return _.map(groups, function(group) {
-    var averageColor = ImageUtil.computeAverageColor(group);
-    return [averageColor.red, averageColor.green, averageColor.blue];
-  });
-}
-
-function isDone(meansA, meansB) {
-  var result = true;
-  _.each(meansA, function(mean) {
-    result = result | _.includes(meansB, mean);
-  });
-  return result;
-}
-
-function groupPointsByMeans(means, points) {
-  var totalError = 0;
-  var groups = _.map(means, function(m) { return []; });
-
-  _.each(points, function(point) {
-    var bestGroupIndex;
-    var bestGroupError = Infinity;
-    _.each(means, function(mean, index) {
-      var error = distance(point, mean);
-      if (error < bestGroupError) {
-        bestGroupError = error;
-        bestGroupIndex = index;
-      }
-    });
-    groups[bestGroupIndex].push(point);
-    totalError += bestGroupError;
-  });
-  return {
-    means: means,
-    groups: groups,
-    error: totalError
-  };
-}
-
-function distance(pointA, pointB) {
-  var squaredDiffs = _.map(pointA, function(dim, index) {
-    var diff = pointA[index] - pointB[index];
-    return diff * diff;
-  });
-  return Math.sqrt(_.sum(squaredDiffs));
-}
-
-// =======================================================
-// ================== KMeans End =========================
-// =======================================================
 
 function plotClusters(pointGroups, elementId){
   var data = _.map(pointGroups, function(group){
