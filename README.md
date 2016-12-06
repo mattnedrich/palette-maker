@@ -22,6 +22,13 @@ This will generate a single `bundle.js` file, containing all of the code.
 ## Running Locally
 After building the `bundle.js` file, the app can be run a few different ways.
 
+### Using Express
+The app is configured to work with express for remote deployments (e.g., Heroku). To run it locally, simply use:
+
+```
+npm start
+```
+
 ### Using http-server
 Since the app runs entirely inside of the browser, you can use [http-server](https://www.npmjs.com/package/http-server) to serve up the files locally.
 ```
@@ -31,13 +38,6 @@ npm install http-server -g
 Then, navigate to the project root and run:
 ```
 http-server ./public
-```
-
-### Using Express
-The app is configured to work with express for remote deployments (e.g., Heroku). To run it locally, simply use:
-
-```
-npm start
 ```
 
 # Features 
