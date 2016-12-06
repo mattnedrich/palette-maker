@@ -4,7 +4,8 @@
   "description": "Palette Extractor is an interactive web tool that allows you to explore different approaches to extract color palettes from images.",
   "main": "bundle.js",
   "scripts": {
-    "heroku-postbuild": "webpack"
+    "postinstall": "webpack",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,9 @@
     "webpack": "^1.13.3",
     "lodash": "^4.17.2",
     "babel-loader": "^6.2.8"
+  },
+  "engines": {
+    "node": "6.3.1",
+    "npm": "3.10.7"
   }
 }
