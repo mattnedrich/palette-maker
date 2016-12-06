@@ -19,6 +19,11 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 var image = null;
 var timerId;
 function handleFileSelect(evt) {
+  $("#plot-content").hide();
+  $("#histogram-output").hide();
+  $("#median-cut-output").hide();
+  $("#kmeans-output").hide();
+
   var file = evt.target.files[0];
 
   console.log("file is " + file);
@@ -33,15 +38,6 @@ function handleFileSelect(evt) {
       image = document.getElementById('original-image');
       image.src = e.target.result;
 
-      $("#source-image").show();
-      $("#plot-content").show();
-
-      $(".input-image-panel").hide();
-      $("#input-image-plot").hide();
-
-      $("#histogram-output").hide();
-      $("#median-cut-output").hide();
-      $("#kmeans-output").hide();
     };
   })(file);
 
@@ -54,8 +50,11 @@ function showImageIfPossible() {
   var imageSrc = document.getElementById("original-image").src;
   if(!_.isEmpty(imageSrc)) {
     clearInterval(timerId);
+
     run();
+
     plotOriginalData(pixels);
+    $("#plot-content").show();
   } else {
     console.log("tick");
   }
@@ -93,24 +92,6 @@ function run(){
   }
 
   console.log("read image, found " + pixels.length + " pixels");
-}
-
-function plotImage() {
-  plotOriginalData(pixels);
-}
-
-// ========================================================================================
-// =================================== Entry Functions ====================================
-// ========================================================================================
-function resetAlgorithmOutputs(){
-  removePaletteTable("#histogram-palette");
-  $("#histogram-output").hide();
-
-  removePaletteTable("#median-cut-palette");
-  $("#median-cut-output").hide();
-
-  removePaletteTable("#kmeans-palette");
-  $("#kmeans-output").hide();
 }
 
 function runHistogram() {
