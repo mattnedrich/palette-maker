@@ -30,7 +30,14 @@ npm install http-server -g
 
 Then, navigate to the project root and run:
 ```
-http-server . 
+http-server ./public
+```
+
+### Using Express
+The app is configured to work with express for remote deployments (e.g., Heroku). To run it locally, simply use:
+
+```
+npm start
 ```
 
 # Features 
