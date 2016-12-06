@@ -26,15 +26,13 @@ function handleFileSelect(evt) {
 
   var file = evt.target.files[0];
 
-  console.log("file is " + file);
-
   var start = 0;
   var stop = file.size - 1;
 
   var reader = new FileReader();
 
-  reader.onload = (function(theFile) {
-    return function(e) {
+  reader.onload = ((theFile) => {
+    return (e) => {
       image = document.getElementById('original-image');
       image.src = e.target.result;
 
@@ -56,7 +54,7 @@ function showImageIfPossible() {
     plotOriginalData(pixels);
     $("#plot-content").show();
   } else {
-    console.log("tick");
+    console.log("waiting for image to load...");
   }
 }
 
@@ -75,9 +73,8 @@ function run(){
   canvas.height = canvasHeight;
   canvas.getContext('2d').drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
-  console.log("Canvas size: " + canvas.width + "x" + canvas.height);
+  /* console.log("Canvas size: " + canvas.width + "x" + canvas.height);*/
   var pixelData = canvas.getContext('2d').getImageData(0, 0, 1, 1).data;
-  console.log("pixel data: " + pixelData);
 
   pixels = [];
   for (var x=0; x < canvas.width; x++){
@@ -90,8 +87,7 @@ function run(){
       });
     }
   }
-
-  console.log("read image, found " + pixels.length + " pixels");
+  /* console.log("read image, found " + pixels.length + " pixels");*/
 }
 
 function runHistogram() {
@@ -115,7 +111,6 @@ function runMedianCut() {
   removePaletteTable("#median-cut-palette");
   $("#median-cut-output").hide();
   var medianCutInputValue = parseInt($("#median-cut-input").val());
-  console.log("running median cut with input " + medianCutInputValue);
 
   var groupsWithInfo = {
     points: pixels,
@@ -129,7 +124,7 @@ function runMedianCut() {
 
   let medianCutRunner = new MedianCutRunner();
   let result = medianCutRunner.run([groupsWithInfo], [], 0, medianCutInputValue);
-  var groups = _.map(result.groups, function(g) {return g.points;});
+  var groups = _.map(result.groups, (g) => {return g.points;});
   var cuts = result.cuts;
 
   let medianCutPlotter = new MedianCutPlotter();
@@ -144,7 +139,6 @@ function runKMeans(){
   removePaletteTable("#kmeans-palette");
   $("#kmeans-output").hide();
   var kMeansInputValue = parseInt($("#kmeans-input").val());
-  console.log("running kmeans with input " + kMeansInputValue);
 
   let kmeansRunner = new KMeansRunner();
   let result = kmeansRunner.run(kMeansInputValue, pixels);
@@ -162,15 +156,14 @@ function removePaletteTable(containerId) {
 
 
 function plotOriginalData(pixels) {
-  console.log("will plot " + pixels.length + " pixels");
-  var colors = _.map(pixels, function(p, index){
+  var colors = _.map(pixels, (p, index) => {
     return "rgb(" + p.red + "," + p.green + "," + p.blue + ")";
   });
 
   var data = {
-    x: _.map(pixels, function(p){ return p.red; }),
-    y: _.map(pixels, function(p){ return p.green; }),
-    z: _.map(pixels, function(p){ return p.blue; }),
+    x: _.map(pixels, (p) => { return p.red; }),
+    y: _.map(pixels, (p) => { return p.green; }),
+    z: _.map(pixels, (p) => { return p.blue; }),
     mode: 'markers',
     marker: {
       size: 3,
@@ -197,16 +190,16 @@ function plotOriginalData(pixels) {
   $(".input-image-panel").show();
 }
 
-$(".plot-toggle-header").click(function() {
+$(".plot-toggle-header").click(() => {
   $header = $(this);
   //getting the next element
   $content = $header.next();
   //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
-  $content.slideToggle(300, function () {});
+  $content.slideToggle(300, () => {});
 });
 
 
-$(document).ready(function() {
+$(document).ready(() => {
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
 
   $("#run-histogram").click(runHistogram);
