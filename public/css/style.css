@@ -1,3 +1,65 @@
+div {
+    font-family: 'Roboto', sans-serif;
+}
+
+#header {
+    height: 75px;
+    background: black;
+}
+
+#header img{
+    height: 65px;
+    margin: auto;
+    display:block;
+    padding-top: 11px;
+}
+
+#choose-image-instructions {
+    border-bottom: 1px solid lightgray;
+    display: block;
+    height: 75px;
+    width: 100%;
+    padding-bottom: 15px;
+}
+
+#extract-palette-instructions {
+    border-bottom: 1px solid lightgray;
+    display: block;
+    height: 75px;
+    width: 100%;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+#extract-palette-instructions-title {
+    display: block;
+    font-size: 25px;
+}
+
+#extract-palette-instructions-description {
+    padding-top: 5px;
+    color: gray;
+    display: block;
+}
+
+#choose-image-instructions-text {
+    display: inline-block;
+    float: left;
+    font-size: 25px;
+    line-height: 75px;
+}
+
+#image-plot-details {
+    margin-bottom: 80px;
+}
+
+.choose-image-instructions-input {
+    display: inline-block;
+    float: left;
+    margin-top:29px;
+    margin-left:25px;
+}
+
 .wrapper {
     margin-left: auto;
     margin-right: auto;
@@ -25,14 +87,13 @@
 .input-image-panel {
     display: flex;
     align-items: center;
-    padding-bottom: 50px;
+    padding-bottom: 20px;
 }
 
 .input-image-panel-left {
-    margin-left: 150px;
-    margin-top: 50px;
-    width: 400px;
-    height: 400px;
+    margin-left: 50px;
+    width: 500px;
+    height: 450px;
     display: inline-block;
     position: relative;
 }
@@ -57,7 +118,7 @@
     margin-left: auto;
     margin-right: auto;
     width: 600px;
-    height: 400px;
+    height: 450px;
     margin-top: 25px;
 }
 
