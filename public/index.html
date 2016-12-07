@@ -50,7 +50,7 @@
                 <div class="tab-content algorithm-output">
                     <div class="tab-pane fade in active panel-body" id="histogram-tab">
                         <div class="alert alert-info algorithm-description">
-                            This histogram approach partitions the RGB space into a uniform 3D grid. For example, if 3 is chosen, it will partition the space into a 3x3x3 grid, contain 27 total grid cells. The number of pixels in each cell (histogram bucket) are counted, and the top 10 populated buckets are selected for the color palette.
+                            This histogram approach partitions the RGB space into a uniform 3D grid. For example, if 3 is chosen, it will partition the space into a 3x3x3 grid, contain 27 total grid cells. The number of pixels in each cell (histogram bucket) are counted, and the top 10 populated buckets are selected for the color palette. Enter a partitions per dimension value and press Run to try it out.
                         </div>
                         <div class="form-inline">
                             <div class="form-group">
@@ -74,7 +74,7 @@
 
                     <div class="tab-pane fade panel-body" id="median-cut-tab">
                         <div class="alert alert-info algorithm-description">
-                            The median cut approach recursively partitions the space into halves along the principle axes (Red, Green, or Blue) with greatest pixel value range. It will generate a palette with partitions + 1 colors.
+                            The median cut approach recursively partitions the space into halves along the principle axes (Red, Green, or Blue) with greatest pixel value range. It will generate a palette with (partitions + 1) colors. Enter a number of partitions, and press Run to try it out.
                         </div>
                         <div class="form-inline">
                             <div class="form-group">
@@ -98,7 +98,7 @@
 
                     <div class="tab-pane fade panel-body" id="kmeans-tab">
                         <div class="alert alert-info algorithm-description">
-                            KMeans attemps to cluster the pixels in to k groups. Since k-means is susceptible to local minima, it is re-run 100 times and the result with the lowest error is selected.
+                            k-means attemps to cluster the pixels in to k groups. Since it is susceptible to local minima, it is re-run 100 times and the result with the lowest error is selected. Enter a value for k, and press Run to try it out.
                         </div>
                         <div class="form-inline">
                             <div class="form-group">
