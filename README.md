@@ -1,6 +1,8 @@
-# palette-extractor
+# palette-maker
 
-Palette Extractor is an interactive web tool that allows you to explore different approaches to extract color palettes from images.
+<img src="https://cloud.githubusercontent.com/assets/4796480/20955109/7ef884a6-bc0e-11e6-90fa-ca85da3b7f55.png" width="200"/>
+
+Palette Maker is an interactive web tool that allows you to explore different approaches to extract color palettes from images.
 
 A <a href="http://palette-maker.herokuapp.com/">demo</a> can be found here.
 
