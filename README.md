@@ -47,15 +47,15 @@ http-server ./public
 ## Future Work
 I would like to add the following in the future:
 * Features
- * Additional color spaces (e.g., HSL).
- * Additional algorithms - perhaps other clustering techniques or image sampling.
- * Improve the design of the extracted palettes, and make them more exportable.
- * Add sample images.
+  * Additional color spaces (e.g., HSL).
+  * Additional algorithms - perhaps other clustering techniques or image sampling.
+  * Improve the design of the extracted palettes, and make them more exportable.
+  * Add sample images.
  
 * Code Improvements
- * Add a lightweight JS framework for better code readability and organization (probably React).
- * Update the Plotly.js imports.
- * Improve the page responsiveness when the algorithms run and provide progress feedback.
+  * Add a lightweight JS framework for better code readability and organization (probably React).
+  * Update the Plotly.js imports.
+  * Improve the page responsiveness when the algorithms run and provide progress feedback.
 
 # Features 
 When the app starts, you simply browse and select a local image. The app then loads the image and plots in in three dimensional RGB space.
